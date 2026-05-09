@@ -6,19 +6,19 @@ export default function Community() {
       id: 1,
       name: 'Priya Sharma',
       location: 'Mumbai',
-      text: 'SHAKTI ne mujhe safe feel karaya. Raat ko akele ghar jaate waqt ab darr nahi lagta.',
+      text: 'SHAKTI made me feel safe. Now I don’t feel scared while going home alone at night.',
     },
     {
       id: 2,
       name: 'Ananya Singh',
       location: 'Delhi',
-      text: 'Yeh app ek lifesaver hai. Meri family ko hamesha pata rehta hai main kahan hoon.',
+      text: 'This app is a lifesaver. My family always knows where I am.',
     },
     {
       id: 3,
       name: 'Kavita Desai',
       location: 'Bangalore',
-      text: 'Community support bahut amazing hai. Hum sab ek doosre ka khayal rakhte hain.',
+      text: 'Community support is amazing. We all look out for each other.',
     },
   ]
 
@@ -32,7 +32,7 @@ export default function Community() {
           style={{ fontFamily: 'Yatra One, cursive' }}
         >
           <span className="relative inline-block">
-            बहनों की बातें
+            Sisters’ Voices
             <span className="absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r from-transparent via-[#D4A017] to-transparent" />
           </span>
         </h2>

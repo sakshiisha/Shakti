@@ -10,7 +10,6 @@ export default function DashboardLayout({ children }) {
   const pathname = usePathname()
   const { isLoggedIn, user } = useAuthStore()
 
-  // Hydration fix — server pe mounted nahi hai
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
@@ -23,7 +22,6 @@ export default function DashboardLayout({ children }) {
     }
   }, [isLoggedIn, mounted, router])
 
-  // Server render pe kuch mat dikhao
   if (!mounted) return null
   if (!isLoggedIn) return null
 
@@ -37,56 +35,65 @@ export default function DashboardLayout({ children }) {
 
   return (
     <div className="min-h-screen bg-[#FDF6EC]">
+
+      {/* TOP NAV */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-[#FDF6EC]"
         style={{ borderBottom: '2px solid rgba(212,160,23,0.25)' }}
       >
-        <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-2">
+
+          {/* LOGO */}
+          <Link href="/" className="flex items-center gap-2 flex-shrink-0">
             <span className="text-2xl"
               style={{ animation: 'pulse-glow 3s ease-in-out infinite' }}
             >ॐ</span>
-            <span className="text-xl text-[#1C1008]"
+            <span className="text-lg sm:text-xl text-[#1C1008]"
               style={{ fontFamily: 'Yatra One, cursive' }}
             >SHAKTI</span>
           </Link>
 
-          <div className="flex items-center gap-2">
+          {/* CENTER NAV (scrollable on mobile) */}
+          <div className="flex items-center gap-2 overflow-x-auto whitespace-nowrap no-scrollbar px-2 sm:px-0">
             {navLinks.map((item) => (
               <Link key={item.href} href={item.href}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200"
+                className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all duration-200 flex-shrink-0"
                 style={{
                   background: isActive(item.href) ? '#F97316' : 'transparent',
                   color:      isActive(item.href) ? '#FDF6EC' : '#1C1008',
                 }}
               >
                 <span>{item.emoji}</span>
-                <span>{item.label}</span>
+                <span className="hidden sm:inline">{item.label}</span>
               </Link>
             ))}
           </div>
 
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-medium text-[#FDF6EC]"
+          {/* USER */}
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center text-sm font-medium text-[#FDF6EC]"
               style={{ background: '#F97316' }}
             >
               {user?.fullName?.charAt(0).toUpperCase() || 'P'}
             </div>
+
             <button
               onClick={() => {
                 useAuthStore.getState().logout()
                 router.push('/login')
               }}
-              className="text-xs px-3 py-1.5 rounded-lg"
+              className="text-[10px] sm:text-xs px-2 sm:px-3 py-1.5 rounded-lg"
               style={{ border: '1px solid rgba(124,29,29,0.3)', color: '#7C1D1D' }}
             >
               Logout
             </button>
           </div>
+
         </div>
 
+        {/* DECOR DOTS */}
         <div className="flex justify-around px-6 pb-2">
           {[0,1,2,3,4].map((i) => (
-            <div key={i} className="w-4 h-4 rounded-full"
+            <div key={i} className="w-3 h-3 sm:w-4 sm:h-4 rounded-full"
               style={{
                 background: 'linear-gradient(to top, #F97316, #D4A017)',
                 animation: 'flicker 1.5s ease-in-out infinite',
@@ -99,7 +106,7 @@ export default function DashboardLayout({ children }) {
 
       <main className="pt-24 pb-20 md:pb-6">{children}</main>
 
-      {/* Mobile bottom nav */}
+      {/* MOBILE BOTTOM NAV */}
       <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden"
         style={{ background: '#FDF6EC', borderTop: '1px solid rgba(212,160,23,0.25)' }}
       >
@@ -118,6 +125,17 @@ export default function DashboardLayout({ children }) {
           ))}
         </div>
       </nav>
+
+      {/* hide scrollbar helper (optional) */}
+      <style jsx>{`
+        .no-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+        .no-scrollbar {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+      `}</style>
     </div>
   )
 }

@@ -13,12 +13,12 @@ export default function SafetyMap() {
           style={{ fontFamily: 'Yatra One, cursive' }}
         >
           <span className="relative inline-block">
-            नक्शा — Live Safety Map
+            Map — Live Safety Map
             <span className="absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r from-transparent via-[#D4A017] to-transparent" />
           </span>
         </h2>
         <p className="text-center text-[#1C1008]/70 mb-16">
-          Real-time safety zones across Bharat
+          Real-time safety zones across India
         </p>
 
         <div className="grid md:grid-cols-2 gap-12 items-center">
@@ -68,7 +68,7 @@ export default function SafetyMap() {
                   fontSize="11"
                   fontWeight="500"
                 >
-                  सुरक्षित
+                  Safe
                 </text>
                 <text
                   x="200" y="103"
@@ -77,7 +77,7 @@ export default function SafetyMap() {
                   fontSize="11"
                   fontWeight="500"
                 >
-                  सावधान
+                  Caution
                 </text>
                 <text
                   x="200" y="48"
@@ -86,7 +86,7 @@ export default function SafetyMap() {
                   fontSize="11"
                   fontWeight="500"
                 >
-                  असुरक्षित
+                  Unsafe
                 </text>
 
                 {/* Nearby location dots */}
@@ -140,9 +140,9 @@ export default function SafetyMap() {
             {/* Zone Legend */}
             <div className="flex justify-center gap-6 mt-4">
               {[
-                { color: '#2D6A4F', label: 'सुरक्षित' },
-                { color: '#F97316', label: 'सावधान' },
-                { color: '#7C1D1D', label: 'असुरक्षित' },
+                { color: '#2D6A4F', label: 'Safe' },
+                { color: '#F97316', label: 'Caution' },
+                { color: '#7C1D1D', label: 'Unsafe' },
               ].map((zone) => (
                 <div key={zone.label} className="flex items-center gap-2">
                   <div
@@ -163,25 +163,25 @@ export default function SafetyMap() {
               {
                 icon: '🏥',
                 title: 'Nearest Help',
-                titleHi: 'नज़दीकी सहायता',
+                titleHi: 'Nearby Assistance',
                 desc: 'Nearest hospitals, police stations aur safe zones real-time mein dhundho',
               },
               {
                 icon: '📍',
                 title: 'Live Tracking',
-                titleHi: 'लाइव ट्रैकिंग',
+                titleHi: 'Live Tracking',
                 desc: 'Apni live location trusted contacts ke saath automatically share karo',
               },
               {
                 icon: '⚡',
                 title: 'Instant Help',
-                titleHi: 'तुरंत मदद',
+                titleHi: 'Instant Help',
                 desc: 'One-touch emergency alerts police aur tumhare safety circle ko',
               },
               {
                 icon: '👥',
                 title: 'Community',
-                titleHi: 'समुदाय',
+                titleHi: 'Community',
                 desc: 'Nearby women se connect karo aur ek doosre ki madad karo',
               },
             ].map((item, index) => (
