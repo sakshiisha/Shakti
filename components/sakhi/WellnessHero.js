@@ -1,18 +1,32 @@
 export default function WellnessHero() {
   return (
-    <div className="relative rounded-2xl overflow-hidden mb-8 p-10"
-      style={{ background: 'linear-gradient(135deg, #FFF0E8, #FFF8F0)', border: '1px solid rgba(232,180,184,0.3)' }}
+    <div
+      className="relative overflow-hidden mb-12 rounded-3xl px-16 py-20"
+      style={{
+        background: 'linear-gradient(135deg, #FFF0E8, #FFF8F0)',
+        border: '1px solid rgba(232,180,184,0.35)',
+        boxShadow: '0 20px 80px rgba(196,149,106,0.15)'
+      }}
     >
-      <div className="absolute top-0 right-0 w-64 h-64 rounded-full pointer-events-none"
-        style={{ background: 'rgba(244,167,185,0.08)', transform: 'translate(30%,-30%)' }}
+      {/* glow blobs BIG */}
+      <div
+        className="absolute top-0 right-0 w-96 h-96 rounded-full pointer-events-none"
+        style={{
+          background: 'rgba(244,167,185,0.08)',
+          transform: 'translate(35%,-35%)'
+        }}
       />
-      <div className="absolute bottom-0 left-0 w-48 h-48 rounded-full pointer-events-none"
-        style={{ background: 'rgba(245,200,66,0.08)', transform: 'translate(-30%,30%)' }}
+      <div
+        className="absolute bottom-0 left-0 w-80 h-80 rounded-full pointer-events-none"
+        style={{
+          background: 'rgba(245,200,66,0.08)',
+          transform: 'translate(-35%,35%)'
+        }}
       />
 
-      {/* Lotus decoration */}
-      <div className="absolute right-10 top-1/2 -translate-y-1/2 pointer-events-none opacity-10">
-        <svg width="160" height="160" viewBox="0 0 100 100" fill="#F4A7B9">
+      {/* BIG lotus decoration */}
+      <div className="absolute right-24 top-1/2 -translate-y-1/2 opacity-10 pointer-events-none">
+        <svg width="260" height="260" viewBox="0 0 100 100" fill="#F4A7B9">
           <ellipse cx="50" cy="70" rx="10" ry="20" opacity="0.6"/>
           <ellipse cx="30" cy="60" rx="12" ry="25" opacity="0.7" transform="rotate(-30 30 60)"/>
           <ellipse cx="70" cy="60" rx="12" ry="25" opacity="0.7" transform="rotate(30 70 60)"/>
@@ -22,46 +36,69 @@ export default function WellnessHero() {
         </svg>
       </div>
 
-      <div className="relative z-10 max-w-lg">
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-4"
-          style={{ background: 'rgba(244,167,185,0.15)', border: '1px solid rgba(244,167,185,0.3)' }}
+      {/* CONTENT */}
+      <div className="relative z-10 max-w-2xl">
+
+        {/* badge BIG */}
+        <div
+          className="inline-flex items-center gap-3 px-6 py-2 rounded-full mb-6"
+          style={{
+            background: 'rgba(244,167,185,0.15)',
+            border: '1px solid rgba(244,167,185,0.35)'
+          }}
         >
-          <span className="text-sm">🌸</span>
-          <span className="text-xs font-medium" style={{ color: '#C4956A' }}>
+          <span className="text-xl">🌸</span>
+          <span className="text-sm font-medium" style={{ color: '#C4956A' }}>
             Sakhi — Your Wellness Circle
           </span>
         </div>
 
-        <h1 className="text-5xl text-[#2C1A0E] mb-2 leading-tight"
+        {/* BIG heading */}
+        <h1
+          className="text-7xl leading-tight mb-3 text-[#2C1A0E]"
           style={{ fontFamily: 'Yatra One, cursive' }}
         >
           Body, Mind & Soul
         </h1>
-        <h2 className="text-xl mb-4" style={{ color: '#C4956A', fontFamily: 'Yatra One, cursive' }}>
+
+        <h2
+          className="text-3xl mb-6"
+          style={{ color: '#C4956A', fontFamily: 'Yatra One, cursive' }}
+        >
           तन, मन, आत्मा
         </h2>
-        <p className="text-sm leading-relaxed mb-6" style={{ color: '#C4956A' }}>
+
+        {/* BIG description */}
+        <p
+          className="text-lg leading-relaxed mb-10 max-w-xl"
+          style={{ color: '#C4956A' }}
+        >
           A sacred space for your health, moods, and womanhood.
           Track your cycle, honor your emotions, and discover
           ancient wisdom for modern life.
         </p>
 
-        <div className="flex gap-6">
+        {/* BIG stats */}
+        <div className="flex gap-16">
           {[
-            { num: 'Day 14',    label: 'Cycle day'      },
-            { num: 'Ovulation', label: 'Current phase'  },
-            { num: '12 days',   label: 'To next period' },
+            { num: 'Day 14',    label: 'Cycle Day'      },
+            { num: 'Ovulation', label: 'Current Phase'  },
+            { num: '12 Days',   label: 'Next Period'    },
           ].map((s) => (
             <div key={s.label}>
-              <div className="text-lg font-medium"
+              <div
+                className="text-3xl mb-1"
                 style={{ color: '#F4A7B9', fontFamily: 'Yatra One, cursive' }}
               >
                 {s.num}
               </div>
-              <div className="text-xs" style={{ color: '#C4956A' }}>{s.label}</div>
+              <div className="text-sm" style={{ color: '#C4956A' }}>
+                {s.label}
+              </div>
             </div>
           ))}
         </div>
+
       </div>
     </div>
   )

@@ -56,35 +56,46 @@ const ALL_REMEDIES = [
 export default function AyurvedicTips({ phase = null }) {
   const [expanded, setExpanded] = useState(null)
 
-  // Phase ke according filter karo
   const remedies = phase
     ? ALL_REMEDIES.filter((r) => r.phases.includes(phase))
     : ALL_REMEDIES
 
   return (
-    <div className="rounded-2xl p-6"
+    <div
+      className="rounded-2xl p-4 sm:p-6"
       style={{
         background: '#FFF8F0',
         border: '1px solid rgba(196,149,106,0.3)',
       }}
     >
-      <h2 className="text-2xl text-[#2C1A0E] mb-1"
+      {/* Heading */}
+      <h2
+        className="text-xl sm:text-2xl text-[#2C1A0E] mb-1"
         style={{ fontFamily: 'Yatra One, cursive' }}
       >
         Ancient Remedies
       </h2>
-      <p className="text-xs mb-5" style={{ color: '#C4956A' }}>
+
+      <p className="text-[11px] sm:text-xs mb-4 sm:mb-5" style={{ color: '#C4956A' }}>
         {phase
           ? `Remedies for your ${phase} phase`
           : 'Ayurvedic wisdom for modern women'}
       </p>
 
-      <div className="space-y-3">
+      <div className="space-y-2 sm:space-y-3">
         {remedies.map((r) => (
           <div key={r.id}>
+            {/* Clickable Row */}
             <div
               onClick={() => setExpanded(expanded === r.id ? null : r.id)}
-              className="flex items-center gap-4 p-3 rounded-xl cursor-pointer transition-all duration-200 hover:scale-[1.01]"
+              className="
+                flex items-center gap-3 sm:gap-4 
+                p-3 sm:p-4 
+                rounded-xl 
+                cursor-pointer 
+                active:scale-[0.98] sm:hover:scale-[1.01]
+                transition-all duration-200
+              "
               style={{
                 background: expanded === r.id ? 'white' : 'rgba(255,255,255,0.6)',
                 border: expanded === r.id
@@ -93,7 +104,8 @@ export default function AyurvedicTips({ phase = null }) {
               }}
             >
               {/* Icon */}
-              <div className="w-11 h-11 rounded-full flex items-center justify-center text-xl flex-shrink-0"
+              <div
+                className="w-10 h-10 sm:w-11 sm:h-11 rounded-full flex items-center justify-center text-lg sm:text-xl flex-shrink-0"
                 style={{ background: '#FAEEDA' }}
               >
                 {r.icon}
@@ -101,18 +113,17 @@ export default function AyurvedicTips({ phase = null }) {
 
               {/* Info */}
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-[#2C1A0E] mb-0.5">
+                <p className="text-sm sm:text-[15px] font-medium text-[#2C1A0E] mb-0.5">
                   {r.name}
                 </p>
-                <p className="text-xs italic truncate"
-                  style={{ color: '#C4956A' }}
-                >
+                <p className="text-[11px] sm:text-xs italic truncate" style={{ color: '#C4956A' }}>
                   {r.description}
                 </p>
               </div>
 
               {/* Arrow */}
-              <div className="text-xs flex-shrink-0 transition-transform duration-200"
+              <div
+                className="text-xs flex-shrink-0 transition-transform duration-200"
                 style={{
                   color: '#C4956A',
                   transform: expanded === r.id ? 'rotate(90deg)' : 'rotate(0deg)',
@@ -122,28 +133,29 @@ export default function AyurvedicTips({ phase = null }) {
               </div>
             </div>
 
-            {/* Expanded details */}
+            {/* Expanded */}
             {expanded === r.id && (
-              <div className="mx-2 mt-1 p-4 rounded-xl"
+              <div
+                className="mx-1 sm:mx-2 mt-1 p-3 sm:p-4 rounded-xl"
                 style={{
                   background: 'white',
                   borderLeft: '3px solid #F4A7B9',
-                  animation: 'reveal 0.3s ease-out',
                 }}
               >
-                <div className="mb-2">
-                  <span className="text-xs font-medium" style={{ color: '#C4956A' }}>
+                <div className="mb-2 leading-relaxed">
+                  <span className="text-[11px] sm:text-xs font-medium" style={{ color: '#C4956A' }}>
                     Ingredients:
                   </span>
-                  <span className="text-xs text-[#2C1A0E] ml-1">
+                  <span className="text-[11px] sm:text-xs text-[#2C1A0E] ml-1">
                     {r.ingredients}
                   </span>
                 </div>
-                <div>
-                  <span className="text-xs font-medium" style={{ color: '#C4956A' }}>
+
+                <div className="leading-relaxed">
+                  <span className="text-[11px] sm:text-xs font-medium" style={{ color: '#C4956A' }}>
                     Benefits:
                   </span>
-                  <span className="text-xs text-[#2C1A0E] ml-1">
+                  <span className="text-[11px] sm:text-xs text-[#2C1A0E] ml-1">
                     {r.benefits}
                   </span>
                 </div>
