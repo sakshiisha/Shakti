@@ -1,20 +1,20 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import useLocation         from '@/hooks/useLocation'
-import { getNearbyPlaces } from '@/lib/placesUtils'
-import SafetyMap           from '@/components/abhaya/SafetyMap'
-import EmergencyButton     from '@/components/abhaya/EmergencyButton'
-import CommunityFeed       from '@/components/abhaya/CommunityFeed'
-import ZoneLegend          from '@/components/abhaya/ZoneLegend'
+import useLocation          from '@/hooks/useLocation'
+import { getNearbyPlaces }  from '@/lib/placesUtils'
+import SafetyMap            from '@/components/abhaya/SafetyMap'
+import EmergencyButton      from '@/components/abhaya/EmergencyButton'
+import CommunityFeed        from '@/components/abhaya/CommunityFeed'
+import ZoneLegend           from '@/components/abhaya/ZoneLegend'
 
 export default function AbhayaPage() {
   const { location, zoneData } = useLocation()
 
   const [resources, setResources] = useState([
-    { icon: '🏥', label: 'Hospital', dist: '...' },
+    { icon: '🏥', label: 'Hospital',       dist: '...' },
     { icon: '🚔', label: 'Police Station', dist: '...' },
-    { icon: '💊', label: 'Pharmacy', dist: '...' },
+    { icon: '💊', label: 'Pharmacy',       dist: '...' },
   ])
   const [resourcesLoading, setResourcesLoading] = useState(false)
 
@@ -55,17 +55,12 @@ export default function AbhayaPage() {
           </h1>
         </div>
 
-        {/* DASHBOARD GRID */}
+        {/* 🌸 DASHBOARD GRID */}
         <div className="grid lg:grid-cols-3 gap-6 items-start">
 
-          {/* LEFT SIDE */}
+          {/* LEFT MAIN AREA */}
           <div className="lg:col-span-2 space-y-6">
-
-            {/* ⭐ FIX — map full width escape */}
-            <div className="-mx-4 sm:-mx-6 lg:-mx-8">
-              <SafetyMap zoneStatus={zoneStatus} location={location} />
-            </div>
-
+            <SafetyMap zoneStatus={zoneStatus} location={location} />
             <CommunityFeed location={location} />
           </div>
 
@@ -74,8 +69,11 @@ export default function AbhayaPage() {
             <EmergencyButton location={location} />
             <ZoneLegend currentStatus={zoneStatus} />
 
-            <div className="rounded-2xl p-4"
-              style={{ background: 'white', border: '1px solid rgba(196,149,106,0.2)' }}>
+            {/* Nearby resources */}
+            <div
+              className="rounded-2xl p-4"
+              style={{ background: 'white', border: '1px solid rgba(196,149,106,0.2)' }}
+            >
               <p className="text-xs font-medium uppercase tracking-wider mb-3"
                 style={{ color: '#C4956A' }}>
                 Nearby Help
@@ -90,7 +88,8 @@ export default function AbhayaPage() {
                   {resources.map((r, i) => (
                     <div key={i}
                       className="flex items-center justify-between p-3 rounded-xl"
-                      style={{ background: 'rgba(196,149,106,0.08)' }}>
+                      style={{ background: 'rgba(196,149,106,0.08)' }}
+                    >
                       <div className="flex items-center gap-3">
                         <span className="text-xl">{r.icon}</span>
                         <span className="text-sm text-[#2C1A0E]">{r.label}</span>
@@ -106,6 +105,7 @@ export default function AbhayaPage() {
 
           </div>
         </div>
+
       </div>
     </div>
   )
