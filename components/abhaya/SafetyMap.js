@@ -36,6 +36,3 @@ export default function SafetyMap({ zoneStatus = 'safe', location = null }) {
     </div>
   )
 }
-
-
-

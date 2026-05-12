@@ -111,15 +111,9 @@ export default function LeafletMap({ zoneStatus = 'safe', location = null }) {
   }, [location, zoneStatus])
 
   return (
-     <div
-    ref={mapRef}
-    className="w-full 
-               h-[320px] 
-               sm:h-[380px] 
-               md:h-[450px] 
-               lg:h-[520px] 
-               xl:h-[600px] 
-               rounded-2xl overflow-hidden"
-  />
+    <div
+      ref={mapRef}
+      style={{ width: '100%', height: '300px', borderRadius: '16px' }}
+    />
   )
 }
