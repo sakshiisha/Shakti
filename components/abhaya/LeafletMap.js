@@ -11,10 +11,10 @@ const ZONE_COLORS = {
 const DEFAULT_LOCATION = { lat: 28.6139, lng: 77.2090 }
 
 export default function LeafletMap({ zoneStatus = 'safe', location = null }) {
-  const mapRef       = useRef(null)
-  const instanceRef  = useRef(null)
-  const circleRef    = useRef(null)
-  const markerRef    = useRef(null)
+  const mapRef      = useRef(null)
+  const instanceRef = useRef(null)
+  const circleRef   = useRef(null)
+  const markerRef   = useRef(null)
 
   const center = location || DEFAULT_LOCATION
 
@@ -27,25 +27,22 @@ export default function LeafletMap({ zoneStatus = 'safe', location = null }) {
 
       if (instanceRef.current) return
 
-      // Map banao
       const map = L.map(mapRef.current, {
-        center:          [center.lat, center.lng],
-        zoom:            15,
-        zoomControl:     true,
+        center: [center.lat, center.lng],
+        zoom: 15,
+        zoomControl: true,
         attributionControl: false,
       })
 
-      // OpenStreetMap tiles — free!
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap',
         maxZoom: 19,
       }).addTo(map)
 
-      // User location marker
       const icon = L.divIcon({
         html: `<div style="
-          width:18px; height:18px; border-radius:50%;
-          background:#F4A7B9; border:3px solid white;
+          width:18px;height:18px;border-radius:50%;
+          background:#F4A7B9;border:3px solid white;
           box-shadow:0 0 10px rgba(244,167,185,0.6);
         "></div>`,
         className: '',
@@ -56,25 +53,23 @@ export default function LeafletMap({ zoneStatus = 'safe', location = null }) {
       const marker = L.marker([center.lat, center.lng], { icon }).addTo(map)
       markerRef.current = marker
 
-      // Zone circle
       const zoneColor = ZONE_COLORS[zoneStatus] || ZONE_COLORS.safe
       const circle = L.circle([center.lat, center.lng], {
-        radius:      300,
-        color:       zoneColor.color,
-        fillColor:   zoneColor.fillColor,
+        radius: 300,
+        color: zoneColor.color,
+        fillColor: zoneColor.fillColor,
         fillOpacity: 0.15,
-        weight:      2,
+        weight: 2,
       }).addTo(map)
       circleRef.current = circle
 
-      // Outer caution ring
       L.circle([center.lat, center.lng], {
-        radius:      600,
-        color:       '#C4956A',
-        fillColor:   'transparent',
+        radius: 600,
+        color: '#C4956A',
+        fillColor: 'transparent',
         fillOpacity: 0,
-        weight:      1.5,
-        dashArray:   '5 5',
+        weight: 1.5,
+        dashArray: '5 5',
       }).addTo(map)
 
       instanceRef.current = map
@@ -90,36 +85,21 @@ export default function LeafletMap({ zoneStatus = 'safe', location = null }) {
     }
   }, [])
 
-  // Location update hone pe map pan karo
   useEffect(() => {
     if (!instanceRef.current || !location) return
 
     instanceRef.current.panTo([location.lat, location.lng])
-
-    if (markerRef.current) {
-      markerRef.current.setLatLng([location.lat, location.lng])
-    }
+    markerRef.current?.setLatLng([location.lat, location.lng])
 
     if (circleRef.current) {
-      circleRef.current.setLatLng([location.lat, location.lng])
       const zoneColor = ZONE_COLORS[zoneStatus] || ZONE_COLORS.safe
+      circleRef.current.setLatLng([location.lat, location.lng])
       circleRef.current.setStyle({
-        color:       zoneColor.color,
-        fillColor:   zoneColor.fillColor,
+        color: zoneColor.color,
+        fillColor: zoneColor.fillColor,
       })
     }
   }, [location, zoneStatus])
 
-  return (
-     <div
-    ref={mapRef}
-    className="w-full 
-               h-[320px] 
-               sm:h-[380px] 
-               md:h-[450px] 
-               lg:h-[520px] 
-               xl:h-[600px] 
-               rounded-2xl overflow-hidden"
-  />
-  )
+  return <div ref={mapRef} className="w-full h-full" />
 }

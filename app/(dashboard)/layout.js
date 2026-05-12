@@ -12,22 +12,17 @@ export default function DashboardLayout({ children }) {
 
   const [mounted, setMounted] = useState(false)
 
-  useEffect(() => {
-    setMounted(true)
-  }, [])
+  useEffect(() => setMounted(true), [])
 
   useEffect(() => {
-    if (mounted && !isLoggedIn) {
-      router.push('/login')
-    }
+    if (mounted && !isLoggedIn) router.push('/login')
   }, [isLoggedIn, mounted, router])
 
-  if (!mounted) return null
-  if (!isLoggedIn) return null
+  if (!mounted || !isLoggedIn) return null
 
   const navLinks = [
-    { href: '/abhaya',      label: 'Abhaya',      emoji: '🛡' },
-    { href: '/sakhi',       label: 'Sakhi',       emoji: '🌸' },
+    { href: '/abhaya', label: 'Abhaya', emoji: '🛡' },
+    { href: '/sakhi', label: 'Sakhi', emoji: '🌸' },
     { href: '/gupt-mandir', label: 'Gupt Mandir', emoji: '🔒' },
   ]
 
@@ -37,42 +32,35 @@ export default function DashboardLayout({ children }) {
     <div className="min-h-screen bg-[#FDF6EC]">
 
       {/* TOP NAV */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-[#FDF6EC]"
-        style={{ borderBottom: '2px solid rgba(212,160,23,0.25)' }}
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-2">
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-[#FDF6EC]/95 backdrop-blur-md border-b border-orange-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
 
           {/* LOGO */}
-          <Link href="/" className="flex items-center gap-2 flex-shrink-0">
-            <span className="text-2xl"
-              style={{ animation: 'pulse-glow 3s ease-in-out infinite' }}
-            >ॐ</span>
-            <span className="text-lg sm:text-xl text-[#1C1008]"
-              style={{ fontFamily: 'Yatra One, cursive' }}
-            >SHAKTI</span>
+          <Link href="/" className="flex items-center gap-2">
+            <span className="text-2xl">ॐ</span>
+            <span className="text-lg sm:text-xl text-[#1C1008]" style={{ fontFamily: 'Yatra One, cursive' }}>
+              SHAKTI
+            </span>
           </Link>
 
-          {/* CENTER NAV (scrollable on mobile) */}
-          <div className="flex items-center gap-2 overflow-x-auto whitespace-nowrap no-scrollbar px-2 sm:px-0">
+          {/* DESKTOP NAV (hidden on mobile) */}
+          <div className="hidden md:flex items-center gap-2">
             {navLinks.map((item) => (
               <Link key={item.href} href={item.href}
-                className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all duration-200 flex-shrink-0"
+                className="px-4 py-2 rounded-xl text-sm font-medium transition-all"
                 style={{
                   background: isActive(item.href) ? '#F97316' : 'transparent',
-                  color:      isActive(item.href) ? '#FDF6EC' : '#1C1008',
+                  color: isActive(item.href) ? '#FDF6EC' : '#1C1008',
                 }}
               >
-                <span>{item.emoji}</span>
-                <span className="hidden sm:inline">{item.label}</span>
+                {item.emoji} {item.label}
               </Link>
             ))}
           </div>
 
           {/* USER */}
-          <div className="flex items-center gap-2 flex-shrink-0">
-            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center text-sm font-medium text-[#FDF6EC]"
-              style={{ background: '#F97316' }}
-            >
+          <div className="flex items-center gap-2">
+            <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-medium text-white bg-orange-500">
               {user?.fullName?.charAt(0).toUpperCase() || 'P'}
             </div>
 
@@ -81,41 +69,30 @@ export default function DashboardLayout({ children }) {
                 useAuthStore.getState().logout()
                 router.push('/login')
               }}
-              className="text-[10px] sm:text-xs px-2 sm:px-3 py-1.5 rounded-lg"
-              style={{ border: '1px solid rgba(124,29,29,0.3)', color: '#7C1D1D' }}
+              className="text-xs px-3 py-1.5 rounded-lg border border-red-300 text-red-700"
             >
               Logout
             </button>
           </div>
 
         </div>
-
-        {/* DECOR DOTS */}
-        <div className="flex justify-around px-6 pb-2">
-          {[0,1,2,3,4].map((i) => (
-            <div key={i} className="w-3 h-3 sm:w-4 sm:h-4 rounded-full"
-              style={{
-                background: 'linear-gradient(to top, #F97316, #D4A017)',
-                animation: 'flicker 1.5s ease-in-out infinite',
-                animationDelay: `${i * 0.3}s`,
-              }}
-            />
-          ))}
-        </div>
       </nav>
 
-      <main className="pt-24 pb-20 md:pb-6">{children}</main>
+      {/* PAGE CONTENT — ✅ OVERLAP FIX */}
+      <main className="pt-[95px] md:pt-[105px] pb-24 md:pb-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          {children}
+        </div>
+      </main>
 
       {/* MOBILE BOTTOM NAV */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden"
-        style={{ background: '#FDF6EC', borderTop: '1px solid rgba(212,160,23,0.25)' }}
-      >
+      <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-[#FDF6EC] border-t border-orange-200">
         <div className="flex">
           {navLinks.map((item) => (
             <Link key={item.href} href={item.href}
               className="flex-1 flex flex-col items-center gap-1 py-3"
               style={{
-                color:     isActive(item.href) ? '#F97316' : '#6B5D4F',
+                color: isActive(item.href) ? '#F97316' : '#6B5D4F',
                 borderTop: isActive(item.href) ? '2px solid #F97316' : '2px solid transparent',
               }}
             >
@@ -126,16 +103,6 @@ export default function DashboardLayout({ children }) {
         </div>
       </nav>
 
-      {/* hide scrollbar helper (optional) */}
-      <style jsx>{`
-        .no-scrollbar::-webkit-scrollbar {
-          display: none;
-        }
-        .no-scrollbar {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
-      `}</style>
     </div>
   )
 }
