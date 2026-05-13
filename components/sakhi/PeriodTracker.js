@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import api from '@/lib/axios'
 
 const phases = {
   menstrual:  [1, 2, 3, 4, 5],
@@ -10,10 +11,10 @@ const phases = {
 }
 
 const PHASE_CONFIG = {
-  menstrual:  { bg: '#E8B4B8', label: 'Menstrual',  icon: '🌸', desc: "Rest and restore. Honor your body's need for slowness."   },
-  follicular: { bg: '#F5C842', label: 'Follicular', icon: '🌱', desc: 'Energy rising. Perfect time for new beginnings.'          },
-  ovulation:  { bg: '#F4A7B9', label: 'Ovulation',  icon: '🌺', desc: 'Peak vitality. Connect and create.'                      },
-  luteal:     { bg: '#C4956A', label: 'Luteal',     icon: '🌙', desc: 'Nurture yourself. Turn inward with gentle care.'          },
+  menstrual:  { bg: '#E8B4B8', label: 'Menstrual',  icon: '🌸', desc: "Rest and restore. Honor your body's need for slowness." },
+  follicular: { bg: '#F5C842', label: 'Follicular', icon: '🌱', desc: 'Energy rising. Perfect time for new beginnings.' },
+  ovulation:  { bg: '#F4A7B9', label: 'Ovulation',  icon: '🌺', desc: 'Peak vitality. Connect and create.' },
+  luteal:     { bg: '#C4956A', label: 'Luteal',     icon: '🌙', desc: 'Nurture yourself. Turn inward with gentle care.' },
 }
 
 const getPhase = (day) => {
@@ -23,12 +24,42 @@ const getPhase = (day) => {
   return 'luteal'
 }
 
-const TODAY = 14
+export default function PeriodTracker({ periodData, setPeriodData }) {
 
-export default function PeriodTracker() {
+  const TODAY = periodData?.currentDay || 1
   const [selectedDay, setSelectedDay] = useState(TODAY)
+
+  // Sync UI when backend updates
+  useEffect(() => {
+    if (periodData?.currentDay) {
+      setSelectedDay(periodData.currentDay)
+    }
+  }, [periodData])
+
   const currentPhase = getPhase(selectedDay)
   const config = PHASE_CONFIG[currentPhase]
+
+  // 🔥 Update backend when user selects a day
+  const updateCycleFromDay = async (day) => {
+    try {
+      const cycleLength  = periodData?.cycleLength  || 28
+      const periodLength = periodData?.periodLength || 5
+
+      const lastPeriodStart = new Date(
+        Date.now() - (day - 1) * 24 * 60 * 60 * 1000
+      )
+
+      const res = await api.put('/period/update', {
+        cycleLength,
+        periodLength,
+        lastPeriodStart,
+      })
+
+      setPeriodData(res.data.data)
+    } catch (err) {
+      console.error('Period update failed', err)
+    }
+  }
 
   return (
     <div className="rounded-2xl p-6"
@@ -81,7 +112,10 @@ export default function PeriodTracker() {
 
           return (
             <button key={day}
-              onClick={() => setSelectedDay(day)}
+              onClick={() => {
+                setSelectedDay(day)
+                updateCycleFromDay(day)
+              }}
               className="aspect-square rounded-full flex items-center justify-center text-sm font-medium transition-all duration-300 hover:scale-105 text-[#2C1A0E]"
               style={{
                 background: isToday ? '#5C1F1F' : bg,

@@ -1,42 +1,43 @@
 'use client'
 
-import { useState } from 'react'
-
-const TESTIMONIALS = [
-  {
-    id: 1,
-    quote: "I learned to listen to my body's rhythms instead of fighting them. Game changer.",
-    author: 'Anonymous Sakhi',
-    location: 'Mumbai',
-    mood: 'Joyful',
-  },
-  {
-    id: 2,
-    quote: 'The Gupt Mandir gave me courage to ask questions I was too ashamed to speak aloud.',
-    author: 'Anonymous Sakhi',
-    location: 'Delhi',
-    mood: 'Peaceful',
-  },
-  {
-    id: 3,
-    quote: 'Tracking my cycle with Ayurvedic wisdom helped me understand myself so deeply.',
-    author: 'Anonymous Sakhi',
-    location: 'Bangalore',
-    mood: 'Joyful',
-  },
-]
+import { useState, useEffect } from 'react'
+import api from '@/lib/axios'
 
 export default function PeerShare() {
-  const [showForm,   setShowForm]   = useState(false)
-  const [story,      setStory]      = useState('')
-  const [submitted,  setSubmitted]  = useState(false)
+  const [showForm,  setShowForm]  = useState(false)
+  const [story,     setStory]     = useState('')
+  const [submitted, setSubmitted] = useState(false)
+  const [posts,     setPosts]     = useState([])
 
-  const handleSubmit = () => {
+  // ⭐ fetch posts from backend
+  useEffect(() => {
+    fetchPosts()
+  }, [])
+
+  const fetchPosts = async () => {
+    try {
+      const res = await api.get('/peershare')
+      setPosts(res.data.posts)
+    } catch (err) {
+      console.log('fetch peershare error', err)
+    }
+  }
+
+  // ⭐ send post to backend
+  const handleSubmit = async () => {
     if (!story.trim()) return
-    setSubmitted(true)
-    setShowForm(false)
-    setStory('')
-    setTimeout(() => setSubmitted(false), 4000)
+
+    try {
+      await api.post('/peershare', { text: story })
+      setSubmitted(true)
+      setShowForm(false)
+      setStory('')
+      fetchPosts() // refresh posts
+
+      setTimeout(() => setSubmitted(false), 4000)
+    } catch (err) {
+      console.log('create post error', err)
+    }
   }
 
   return (
@@ -64,14 +65,10 @@ export default function PeerShare() {
         </button>
       </div>
 
-      {/* Share form */}
+      {/* Form */}
       {showForm && (
         <div className="rounded-xl p-4 mb-6"
-          style={{
-            background: 'white',
-            border: '1px solid rgba(244,167,185,0.3)',
-            animation: 'reveal 0.3s ease-out',
-          }}
+          style={{ background: 'white', border: '1px solid rgba(244,167,185,0.3)' }}
         >
           <p className="text-xs mb-2" style={{ color: '#C4956A' }}>
             Share anonymously — no name, no judgment
@@ -81,22 +78,16 @@ export default function PeerShare() {
             onChange={(e) => setStory(e.target.value)}
             placeholder="Share your experience, tip, or feeling..."
             className="w-full p-3 rounded-lg text-sm text-[#2C1A0E] outline-none resize-none"
-            style={{
-              background: '#FFF8F0',
-              border: '1px solid rgba(232,180,184,0.4)',
-              height: '80px',
-            }}
+            style={{ background: '#FFF8F0', border: '1px solid rgba(232,180,184,0.4)', height: '80px' }}
           />
           <div className="flex gap-3 mt-3">
-            <button
-              onClick={handleSubmit}
+            <button onClick={handleSubmit}
               className="px-4 py-2 rounded-lg text-sm font-medium text-[#2C1A0E]"
               style={{ background: 'linear-gradient(to right, #E8B4B8, #F4A7B9)' }}
             >
               Share
             </button>
-            <button
-              onClick={() => setShowForm(false)}
+            <button onClick={() => setShowForm(false)}
               className="px-4 py-2 rounded-lg text-sm"
               style={{ color: '#C4956A', border: '1px solid rgba(196,149,106,0.3)' }}
             >
@@ -106,58 +97,31 @@ export default function PeerShare() {
         </div>
       )}
 
-      {/* Success */}
       {submitted && (
         <div className="rounded-xl p-4 mb-6 text-sm text-[#2C1A0E]"
           style={{ background: 'rgba(45,106,79,0.1)' }}
         >
-          Thank you for sharing! Your story will help another sister. 🌸
+          Thank you for sharing! Your story will help another sister 🌸
         </div>
       )}
 
-      {/* Stories grid */}
+      {/* ⭐ REAL POSTS */}
       <div className="grid md:grid-cols-3 gap-4">
-        {TESTIMONIALS.map((t) => (
-          <div key={t.id} className="rounded-xl p-5"
+        {posts.map((post) => (
+          <div key={post._id} className="rounded-xl p-5"
             style={{
               background: 'linear-gradient(135deg, white, rgba(244,167,185,0.08))',
               border: '1px solid rgba(232,180,184,0.3)',
             }}
           >
-            {/* Quote mark */}
-            <div className="mb-3">
-              <svg width="36" height="26" viewBox="0 0 40 30">
-                <path
-                  d="M0 15 Q0 0 10 0 T20 15 Q20 25 10 30 L5 20 Q10 18 10 15 Q10 10 5 10 Q0 10 0 15"
-                  fill="#F4A7B9" opacity="0.4"
-                />
-                <path
-                  d="M20 15 Q20 0 30 0 T40 15 Q40 25 30 30 L25 20 Q30 18 30 15 Q30 10 25 10 Q20 10 20 15"
-                  fill="#F4A7B9" opacity="0.4"
-                />
-              </svg>
-            </div>
-            <p className="text-sm text-[#2C1A0E] italic mb-4 leading-relaxed">
-              "{t.quote}"
+            <p className="text-sm text-[#2C1A0E] italic leading-relaxed">
+              "{post.text}"
             </p>
-            <div className="pt-3"
-              style={{ borderTop: '0.5px solid rgba(232,180,184,0.3)' }}
+
+            <div className="mt-4 pt-3 text-xs"
+              style={{ borderTop: '0.5px solid rgba(232,180,184,0.3)', color:'#C4956A' }}
             >
-              <div className="flex justify-between items-center">
-                <div>
-                  <p className="text-xs font-medium" style={{ color: '#C4956A' }}>
-                    {t.author}
-                  </p>
-                  <p className="text-xs" style={{ color: 'rgba(196,149,106,0.7)' }}>
-                    {t.location}
-                  </p>
-                </div>
-                <span className="text-xs px-2 py-0.5 rounded-full"
-                  style={{ background: '#FBEAF0', color: '#72243E' }}
-                >
-                  {t.mood}
-                </span>
-              </div>
+              Anonymous Sakhi
             </div>
           </div>
         ))}
