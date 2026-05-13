@@ -32,7 +32,9 @@ export default function DashboardLayout({ children }) {
     <div className="min-h-screen bg-[#FDF6EC]">
 
       {/* TOP NAV */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-[#FDF6EC]/95 backdrop-blur-md border-b border-orange-200">
+      <nav className="fixed top-0 left-0 right-0 z-[9999] bg-[#FDF6EC]"
+  style={{ borderBottom: '2px solid rgba(212,160,23,0.25)' }}
+>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
 
           {/* LOGO */}

@@ -5,18 +5,18 @@ import api from '@/lib/axios'
 
 export default function EmergencyButton({ location }) {
   const [pressed, setPressed] = useState(false)
-  const [sent,    setSent]    = useState(false)
-  const [error,   setError]   = useState('')
+  const [sent, setSent] = useState(false)
+  const [error, setError] = useState('')
 
   const handleSOS = async () => {
     setPressed(true)
     setError('')
     try {
       await api.post('/emergency/sos', {
-        lat:     location?.lat || 0,
-        lng:     location?.lng || 0,
+        lat: location?.lat || 0,
+        lng: location?.lng || 0,
         address: 'Current location',
-        area:    'Nearby area',
+        area: 'Nearby area',
       })
       setSent(true)
     } catch (err) {
@@ -36,8 +36,8 @@ export default function EmergencyButton({ location }) {
           <div key={i} className="absolute w-1 h-1 rounded-full"
             style={{
               background: '#FFF8F0',
-              top:  `${(i * 37 + 11) % 100}%`,
-              left: `${(i * 53 + 7)  % 100}%`,
+              top: `${(i * 37 + 11) % 100}%`,
+              left: `${(i * 53 + 7) % 100}%`,
               opacity: 0.3,
               animation: 'twinkle 3s ease-in-out infinite',
               animationDelay: `${(i * 0.3) % 3}s`,
@@ -73,7 +73,7 @@ export default function EmergencyButton({ location }) {
           <>
             {/* Diya row */}
             <div className="flex justify-between sm:justify-around mb-5 sm:mb-6">
-              {[0,1,2,3,4].map((i) => (
+              {[0, 1, 2, 3, 4].map((i) => (
                 <div key={i} className="w-4 h-4 sm:w-5 sm:h-5 rounded-full"
                   style={{
                     background: 'linear-gradient(to top, #F4A7B9, #F5C842)',
@@ -129,7 +129,7 @@ export default function EmergencyButton({ location }) {
 
             {error && (
               <p className="text-[11px] sm:text-xs mb-3"
-                 style={{ color: '#F09595' }}>
+                style={{ color: '#F09595' }}>
                 {error}
               </p>
             )}
@@ -137,7 +137,7 @@ export default function EmergencyButton({ location }) {
             <div className="grid grid-cols-3 gap-2 sm:gap-3">
               {[
                 { icon: '📍', label: 'GPS Location' },
-                { icon: '📱', label: 'SMS Alert'    },
+                { icon: '📱', label: 'SMS Alert' },
                 { icon: '🚔', label: 'Police Alert' },
               ].map((f) => (
                 <div key={f.label} className="text-center">
@@ -148,6 +148,14 @@ export default function EmergencyButton({ location }) {
                   </div>
                 </div>
               ))}
+            </div>
+            <div>
+              <a href="tel:112"
+                className="block w-full py-3 rounded-xl text-center text-sm font-medium mt-3"
+                style={{ background: '#7C1D1D', color: 'white' }}
+              >
+                📞 Call Police — 112
+              </a>
             </div>
           </>
         )}
