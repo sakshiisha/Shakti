@@ -5,7 +5,6 @@ import api from '@/lib/axios'
 import WellnessHero  from '@/components/sakhi/WellnessHero'
 import PeriodTracker from '@/components/sakhi/PeriodTracker'
 import MoodCheckin   from '@/components/sakhi/MoodCheckin'
-import PeerShare from '@/components/sakhi/PeerShare'
 import AyurvedicTips from '@/components/sakhi/AyurvedicTips'
 
 export default function SakhiPage() {
@@ -73,7 +72,6 @@ export default function SakhiPage() {
           <>
   {activeTab === 'period'   && <PeriodTracker periodData={periodData} setPeriodData={setPeriodData} />}
   {activeTab === 'mood'     && <MoodCheckin todayMood={todayMood} setTodayMood={setTodayMood} />}
-  {activeTab === 'peers'    && <PeerShare />} {/* 👈 ADD THIS */}
   {activeTab === 'remedies' && <AyurvedicTips phase={periodData?.currentPhase} />}
 </>
         )}
