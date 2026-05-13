@@ -47,12 +47,11 @@ export default function Hero() {
             >
               Get Started — Free
             </Link>
-            <Link
-              href="#safety"
-              className="px-8 py-4 border-2 border-[#7C1D1D] text-[#7C1D1D] rounded-lg hover:bg-[#7C1D1D] hover:text-[#FDF6EC] transition-all duration-300"
-            >
-              See How It Works
-            </Link>
+           <Link href="/how-it-works"
+  className="px-8 py-4 border-2 border-[#7C1D1D] text-[#7C1D1D] rounded-lg hover:bg-[#7C1D1D] hover:text-[#FDF6EC] transition-all duration-300"
+>
+  See How It Works
+</Link>
           </div>
 
           {/* Trust badges */}
