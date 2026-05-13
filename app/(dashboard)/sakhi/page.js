@@ -35,7 +35,7 @@ export default function SakhiPage() {
     { id: 'period',   label: 'Period'   },
     { id: 'mood',     label: 'Mood'     },
     { id: 'remedies', label: 'Remedies' },
-    { id: 'peers',    label: 'Peer Share' }, // 👈 ADD THIS
+   
   ]
 
   return (
