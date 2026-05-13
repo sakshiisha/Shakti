@@ -6,6 +6,7 @@ import WellnessHero  from '@/components/sakhi/WellnessHero'
 import PeriodTracker from '@/components/sakhi/PeriodTracker'
 import MoodCheckin   from '@/components/sakhi/MoodCheckin'
 import AyurvedicTips from '@/components/sakhi/AyurvedicTips'
+import PeerShare from '@/components/sakhi/PeerShare'
 
 export default function SakhiPage() {
   const [periodData, setPeriodData] = useState(null)
@@ -35,7 +36,7 @@ export default function SakhiPage() {
     { id: 'period',   label: 'Period'   },
     { id: 'mood',     label: 'Mood'     },
     { id: 'remedies', label: 'Remedies' },
-   
+    { id: 'peer',     label: 'Sisters'  },
   ]
 
   return (
@@ -73,6 +74,7 @@ export default function SakhiPage() {
   {activeTab === 'period'   && <PeriodTracker periodData={periodData} setPeriodData={setPeriodData} />}
   {activeTab === 'mood'     && <MoodCheckin todayMood={todayMood} setTodayMood={setTodayMood} />}
   {activeTab === 'remedies' && <AyurvedicTips phase={periodData?.currentPhase} />}
+  {activeTab === 'peer' && <PeerShare />}
 </>
         )}
 
