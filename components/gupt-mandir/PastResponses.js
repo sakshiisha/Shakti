@@ -12,19 +12,26 @@ export default function ResponseCard({
         border: '1px solid rgba(245,200,66,0.3)',
       }}
     >
+      {/* Top row */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-4">
         <div className="flex-1">
-          {/* ✅ blur hata diya */}
-          <p className="text-xs sm:text-sm mb-2 leading-relaxed"
-            style={{ color: 'rgba(44,26,14,0.8)' }}
+          {/* Blurred concern */}
+          <p
+            className="text-xs sm:text-sm mb-2 select-none leading-relaxed"
+            style={{
+              color: 'rgba(44,26,14,0.5)',
+              filter: 'blur(4px)',
+            }}
           >
             {concern}
           </p>
+
           <p className="text-[11px] sm:text-xs" style={{ color: '#C4956A' }}>
             {date}
           </p>
         </div>
 
+        {/* Status badge */}
         <span
           className="self-start sm:self-auto flex items-center gap-1 px-3 py-1 rounded-full text-[11px] sm:text-xs font-medium flex-shrink-0"
           style={
@@ -37,8 +44,10 @@ export default function ResponseCard({
         </span>
       </div>
 
+      {/* Doctor reply */}
       {status === 'replied' && reply && (
-        <div className="mt-4 pt-4"
+        <div
+          className="mt-4 pt-4"
           style={{ borderTop: '0.5px solid rgba(232,180,184,0.3)' }}
         >
           <div className="flex gap-3 items-start">
@@ -48,12 +57,15 @@ export default function ResponseCard({
             >
               Dr
             </div>
+
             <div>
-              <p className="text-[11px] sm:text-xs font-medium mb-1"
+              <p
+                className="text-[11px] sm:text-xs font-medium mb-1"
                 style={{ color: '#3C3489' }}
               >
                 Admin · Doctor Response
               </p>
+
               <p className="text-xs sm:text-sm text-[#2C1A0E] leading-relaxed">
                 {reply}
               </p>
@@ -62,11 +74,14 @@ export default function ResponseCard({
         </div>
       )}
 
+      {/* Under review message */}
       {status === 'under-review' && (
-        <div className="mt-4 pt-4"
+        <div
+          className="mt-4 pt-4"
           style={{ borderTop: '0.5px solid rgba(232,180,184,0.3)' }}
         >
-          <p className="text-xs sm:text-sm italic"
+          <p
+            className="text-xs sm:text-sm italic"
             style={{ color: 'rgba(44,26,14,0.6)' }}
           >
             A trusted professional is reviewing your concern.
