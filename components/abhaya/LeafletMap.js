@@ -11,10 +11,10 @@ const ZONE_COLORS = {
 const DEFAULT_LOCATION = { lat: 28.6139, lng: 77.2090 }
 
 export default function LeafletMap({ zoneStatus = 'safe', location = null }) {
-  const mapRef       = useRef(null)
-  const instanceRef  = useRef(null)
-  const circleRef    = useRef(null)
-  const markerRef    = useRef(null)
+  const mapRef      = useRef(null)
+  const instanceRef = useRef(null)
+  const circleRef   = useRef(null)
+  const markerRef   = useRef(null)
 
   const center = location || DEFAULT_LOCATION
 
@@ -22,26 +22,25 @@ export default function LeafletMap({ zoneStatus = 'safe', location = null }) {
     if (typeof window === 'undefined') return
 
     const initMap = async () => {
+      if (!mapRef.current) return  // ✅ FIX
+
       const L = (await import('leaflet')).default
       await import('leaflet/dist/leaflet.css')
 
       if (instanceRef.current) return
 
-      // Map banao
       const map = L.map(mapRef.current, {
-        center:          [center.lat, center.lng],
-        zoom:            15,
-        zoomControl:     true,
+        center:             [center.lat, center.lng],
+        zoom:               15,
+        zoomControl:        true,
         attributionControl: false,
       })
 
-      // OpenStreetMap tiles — free!
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap',
-        maxZoom: 19,
+        maxZoom:     19,
       }).addTo(map)
 
-      // User location marker
       const icon = L.divIcon({
         html: `<div style="
           width:18px; height:18px; border-radius:50%;
@@ -49,14 +48,13 @@ export default function LeafletMap({ zoneStatus = 'safe', location = null }) {
           box-shadow:0 0 10px rgba(244,167,185,0.6);
         "></div>`,
         className: '',
-        iconSize: [18, 18],
+        iconSize:   [18, 18],
         iconAnchor: [9, 9],
       })
 
       const marker = L.marker([center.lat, center.lng], { icon }).addTo(map)
       markerRef.current = marker
 
-      // Zone circle
       const zoneColor = ZONE_COLORS[zoneStatus] || ZONE_COLORS.safe
       const circle = L.circle([center.lat, center.lng], {
         radius:      300,
@@ -67,7 +65,6 @@ export default function LeafletMap({ zoneStatus = 'safe', location = null }) {
       }).addTo(map)
       circleRef.current = circle
 
-      // Outer caution ring
       L.circle([center.lat, center.lng], {
         radius:      600,
         color:       '#C4956A',
@@ -90,7 +87,6 @@ export default function LeafletMap({ zoneStatus = 'safe', location = null }) {
     }
   }, [])
 
-  // Location update hone pe map pan karo
   useEffect(() => {
     if (!instanceRef.current || !location) return
 
@@ -104,8 +100,8 @@ export default function LeafletMap({ zoneStatus = 'safe', location = null }) {
       circleRef.current.setLatLng([location.lat, location.lng])
       const zoneColor = ZONE_COLORS[zoneStatus] || ZONE_COLORS.safe
       circleRef.current.setStyle({
-        color:       zoneColor.color,
-        fillColor:   zoneColor.fillColor,
+        color:     zoneColor.color,
+        fillColor: zoneColor.fillColor,
       })
     }
   }, [location, zoneStatus])
