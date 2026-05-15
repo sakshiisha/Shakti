@@ -33,17 +33,27 @@ function ChatPanel({ post, currentUser, isAnon, onClose }) {
   const roomId = `chat_${post._id}`
   const [messages, setMessages] = useState([])
   const [text,     setText]     = useState('')
+  const [reported, setReported] = useState(false)
   const endRef = useRef(null)
 
   useEffect(() => {
     socket.emit('join-room', roomId)
 
-    const handler = (msg) => {
+    const onMessage = (msg) => {
       setMessages((prev) => [...prev, { ...msg, self: false }])
       setTimeout(() => endRef.current?.scrollIntoView({ behavior: 'smooth' }), 50)
     }
-    socket.on('chat-message', handler)
-    return () => socket.off('chat-message', handler)
+
+    const onDisconnect = () => onClose()
+
+    socket.on('chat-message',        onMessage)
+    socket.on('emergency_disconnect', onDisconnect)
+
+    return () => {
+      socket.off('chat-message',        onMessage)
+      socket.off('emergency_disconnect', onDisconnect)
+      socket.emit('leave-room', roomId)
+    }
   }, [roomId])
 
   const sendMsg = () => {
@@ -52,7 +62,9 @@ function ChatPanel({ post, currentUser, isAnon, onClose }) {
       room:     roomId,
       text:     text.trim(),
       userName: isAnon ? 'Anonymous' : (currentUser?.fullName || 'You'),
-      time:     new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }),
+      time:     new Date().toLocaleTimeString('en-IN', {
+        hour: '2-digit', minute: '2-digit',
+      }),
     }
     socket.emit('send-message', msg)
     setMessages((prev) => [...prev, { ...msg, self: true }])
@@ -60,24 +72,58 @@ function ChatPanel({ post, currentUser, isAnon, onClose }) {
     setTimeout(() => endRef.current?.scrollIntoView({ behavior: 'smooth' }), 50)
   }
 
+  const handleEmergencyDisconnect = () => {
+    socket.emit('emergency_disconnect', { room: roomId })
+    onClose()
+  }
+
+  const handleReport = async () => {
+    try {
+      await api.post('/support/report', {
+        reportedUserId: post.user,
+        reason:         'harassment',
+        chatRoom:       roomId,
+      })
+      setReported(true)
+      setTimeout(onClose, 1500)
+    } catch {}
+  }
+
   return (
     <div style={{ borderTop: '1px solid rgba(196,149,106,0.15)' }}>
+      {/* Header */}
       <div className="flex items-center justify-between px-4 py-2.5"
         style={{ background: 'rgba(124,29,29,0.04)' }}
       >
         <div className="flex items-center gap-2">
           <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
           <p className="text-xs font-medium text-[#2C1A0E]">
-            Private Chat with {post.userName}
+            Private Chat — {post.userName}
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-[10px] px-2 py-1 rounded-full"
-            style={{ background: 'rgba(45,106,79,0.1)', color: '#2D6A4F' }}
+          {reported ? (
+            <span className="text-[10px] px-2 py-1 rounded-full"
+              style={{ background: 'rgba(45,106,79,0.1)', color: '#2D6A4F' }}
+            >
+              ✓ Reported
+            </span>
+          ) : (
+            <button onClick={handleReport}
+              className="text-[10px] px-2 py-1 rounded-lg"
+              style={{ background: 'rgba(124,29,29,0.08)', color: '#7C1D1D' }}
+            >
+              🚩 Report
+            </button>
+          )}
+          <button onClick={handleEmergencyDisconnect}
+            className="text-[10px] px-2 py-1 rounded-lg font-medium"
+            style={{ background: '#E24B4A', color: 'white' }}
           >
-            Only you two can see this
-          </span>
-          <button onClick={onClose} className="text-xs px-2 py-1 rounded-lg"
+            ⚡ End
+          </button>
+          <button onClick={onClose}
+            className="text-xs px-2 py-1 rounded-lg"
             style={{ color: '#C4956A' }}
           >
             ✕
@@ -85,6 +131,15 @@ function ChatPanel({ post, currentUser, isAnon, onClose }) {
         </div>
       </div>
 
+      <div className="px-3 py-1.5 text-center"
+        style={{ background: 'rgba(196,149,106,0.04)' }}
+      >
+        <p className="text-[10px]" style={{ color: '#C4956A' }}>
+          🔒 Anonymous · No personal info shared · Messages not stored
+        </p>
+      </div>
+
+      {/* Messages */}
       <div className="px-4 py-3 space-y-2 overflow-y-auto"
         style={{ maxHeight: '220px', minHeight: '80px' }}
       >
@@ -118,6 +173,7 @@ function ChatPanel({ post, currentUser, isAnon, onClose }) {
         <div ref={endRef} />
       </div>
 
+      {/* Input */}
       <div className="flex gap-2 px-4 pb-4 pt-2"
         style={{ borderTop: '0.5px solid rgba(196,149,106,0.1)' }}
       >
@@ -143,39 +199,72 @@ function ChatPanel({ post, currentUser, isAnon, onClose }) {
   )
 }
 
+// ── Support Request Banner — koi nearby request hai ─────────────────────────
+function SupportBanner({ request, onAccept, onDismiss }) {
+  return (
+    <div className="rounded-2xl p-4 mb-4 flex items-center justify-between gap-3"
+      style={{ background: '#FAEEDA', border: '1px solid rgba(239,159,39,0.4)' }}
+    >
+      <div className="flex items-center gap-3">
+        <span className="text-2xl">🙏</span>
+        <div>
+          <p className="text-sm font-medium text-[#2C1A0E]">
+            Someone nearby needs support
+          </p>
+          <p className="text-xs" style={{ color: '#633806' }}>
+            {request.situation?.replace('_', ' ')} · Anonymous request
+          </p>
+        </div>
+      </div>
+      <div className="flex gap-2 flex-shrink-0">
+        <button onClick={() => onAccept(request._id)}
+          className="px-3 py-2 rounded-xl text-xs font-medium text-white"
+          style={{ background: '#2D6A4F' }}
+        >
+          Help
+        </button>
+        <button onClick={onDismiss}
+          className="px-3 py-2 rounded-xl text-xs"
+          style={{ color: '#C4956A', border: '1px solid rgba(196,149,106,0.3)' }}
+        >
+          Skip
+        </button>
+      </div>
+    </div>
+  )
+}
+
 // ── Main Feed ────────────────────────────────────────────────────────────────
 export default function CommunityFeed({ location }) {
   const { user } = useAuthStore()
   const socket   = getSocket()
 
-  const [posts,        setPosts]        = useState([])
-  const [loading,      setLoading]      = useState(true)
-  const [text,         setText]         = useState('')
-  const [posting,      setPosting]      = useState(false)
-  const [isAnon,       setIsAnon]       = useState(true)
-  const [activeChatId, setActiveChatId] = useState(null)
-  const [connected,    setConnected]    = useState(false)
+  const [posts,          setPosts]          = useState([])
+  const [loading,        setLoading]        = useState(true)
+  const [text,           setText]           = useState('')
+  const [posting,        setPosting]        = useState(false)
+  const [isAnon,         setIsAnon]         = useState(true)
+  const [activeChatId,   setActiveChatId]   = useState(null)
+  const [connected,      setConnected]      = useState(false)
+  const [supportRequest, setSupportRequest] = useState(null)
+  const [postType,       setPostType]       = useState('distress')
 
   const prevLocationRef = useRef(null)
 
-  // ── Socket events ────────────────────────────────────────────────────────
+  // ── Socket ───────────────────────────────────────────────────────────────
   useEffect(() => {
     const onConnect    = () => setConnected(true)
     const onDisconnect = () => setConnected(false)
 
     const onNewPost = (post) => {
       if (!location) return
-
       const pLat = post.location?.coordinates?.[1]
       const pLng = post.location?.coordinates?.[0]
-
-      // Distance check — sirf 500m ke andar
       const dist = getDistanceMeters(
         location.lat, location.lng,
         pLat || location.lat,
         pLng || location.lng
       )
-
       if (dist <= RADIUS) {
         setPosts((prev) => {
           if (prev.find((p) => p._id === post._id)) return prev
@@ -190,10 +279,16 @@ export default function CommunityFeed({ location }) {
       )
     }
 
+    // Support request nearby
+    const onSupportRequest = (req) => {
+      setSupportRequest(req)
+    }
+
     socket.on('connect',            onConnect)
     socket.on('disconnect',         onDisconnect)
     socket.on('new-community-post', onNewPost)
     socket.on('post-helped',        onPostHelped)
+    socket.on('support_request',    onSupportRequest)
 
     if (socket.connected) setConnected(true)
 
@@ -202,25 +297,22 @@ export default function CommunityFeed({ location }) {
       socket.off('disconnect',         onDisconnect)
       socket.off('new-community-post', onNewPost)
       socket.off('post-helped',        onPostHelped)
+      socket.off('support_request',    onSupportRequest)
     }
   }, [location])
 
-  // ── Fetch posts — location change pe refetch + old posts remove ──────────
+  // ── Fetch posts ──────────────────────────────────────────────────────────
   const fetchPosts = useCallback(async () => {
     if (!location) return
     setLoading(true)
 
-    // ✅ Old room leave karo
     if (prevLocationRef.current) {
       const oldRoom = `near_${prevLocationRef.current.lat.toFixed(2)}_${prevLocationRef.current.lng.toFixed(2)}`
       socket.emit('leave-room', oldRoom)
     }
 
-    // ✅ Naya room join karo
-    const newRoom = `near_${location.lat.toFixed(2)}_${location.lng.toFixed(2)}`
     socket.emit('join-nearby', { lat: location.lat, lng: location.lng })
-    socket.emit('join-room', newRoom)
-
+    socket.emit('user_online',  { lat: location.lat, lng: location.lng })
     prevLocationRef.current = location
 
     try {
@@ -228,7 +320,6 @@ export default function CommunityFeed({ location }) {
         params: { lat: location.lat, lng: location.lng, radius: RADIUS },
       })
 
-      // ✅ Sirf current location ke posts dikhao
       const nearbyPosts = (data.posts || []).filter((post) => {
         const pLat = post.location?.coordinates?.[1]
         const pLng = post.location?.coordinates?.[0]
@@ -245,20 +336,15 @@ export default function CommunityFeed({ location }) {
     }
   }, [location])
 
-  // ✅ Location badli — turant posts clear karo aur refetch karo
+  // ── Location change — posts clear + refetch ──────────────────────────────
   useEffect(() => {
-    if (!location) {
-      setLoading(false)
-      return
-    }
+    if (!location) { setLoading(false); return }
 
     const prev = prevLocationRef.current
-
-    // 100m se zyada move kiya toh posts clear karke refetch
     if (prev) {
       const dist = getDistanceMeters(prev.lat, prev.lng, location.lat, location.lng)
       if (dist > 100) {
-        setPosts([])       // ✅ Purani posts turant clear
+        setPosts([])
         setActiveChatId(null)
         fetchPosts()
       }
@@ -277,7 +363,7 @@ export default function CommunityFeed({ location }) {
         lat:         location.lat,
         lng:         location.lng,
         area:        'Nearby',
-        type:        'distress',
+        type:        postType,
         isAnonymous: isAnon,
       })
       setText('')
@@ -295,9 +381,15 @@ export default function CommunityFeed({ location }) {
       setPosts((prev) =>
         prev.map((p) => (p._id === postId ? { ...p, helped: true } : p))
       )
-    } catch (err) {
-      console.error('Help failed:', err)
-    }
+    } catch {}
+  }
+
+  // ── Accept support request ───────────────────────────────────────────────
+  const handleAcceptSupport = async (requestId) => {
+    try {
+      await api.post(`/support/accept/${requestId}`)
+      setSupportRequest(null)
+    } catch {}
   }
 
   return (
@@ -321,11 +413,22 @@ export default function CommunityFeed({ location }) {
               animation:  connected ? 'pulse 2s infinite' : 'none',
             }}
           />
-          <span className="text-xs" style={{ color: connected ? '#2D6A4F' : '#C4956A' }}>
+          <span className="text-xs"
+            style={{ color: connected ? '#2D6A4F' : '#C4956A' }}
+          >
             {connected ? 'Live' : 'Connecting...'}
           </span>
         </div>
       </div>
+
+      {/* Support request banner */}
+      {supportRequest && (
+        <SupportBanner
+          request={supportRequest}
+          onAccept={handleAcceptSupport}
+          onDismiss={() => setSupportRequest(null)}
+        />
+      )}
 
       {/* No location */}
       {!location && (
@@ -341,6 +444,26 @@ export default function CommunityFeed({ location }) {
         <div className="rounded-2xl p-4 mb-5"
           style={{ background: 'white', border: '1px solid rgba(196,149,106,0.2)' }}
         >
+          {/* Post type toggle */}
+          <div className="flex gap-2 mb-3">
+            {[
+              { value: 'distress', label: '⚠ Needs Help', color: '#FCEBEB', active: '#791F1F' },
+              { value: 'general',  label: '📢 Info Share', color: '#EAF3DE', active: '#27500A' },
+            ].map((t) => (
+              <button key={t.value}
+                onClick={() => setPostType(t.value)}
+                className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
+                style={{
+                  background: postType === t.value ? t.color : 'transparent',
+                  color:      postType === t.value ? t.active : '#C4956A',
+                  border:     `1px solid ${postType === t.value ? t.active + '40' : 'rgba(196,149,106,0.2)'}`,
+                }}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+
           <textarea
             value={text}
             onChange={(e) => setText(e.target.value)}
@@ -350,7 +473,11 @@ export default function CommunityFeed({ location }) {
                 handlePost()
               }
             }}
-            placeholder="Share what you are experiencing nearby... (Enter to post)"
+            placeholder={
+              postType === 'distress'
+                ? 'Describe what is happening nearby...'
+                : 'Share safety info for this area...'
+            }
             className="w-full text-sm text-[#2C1A0E] outline-none resize-none"
             style={{ background: 'transparent', border: 'none', minHeight: '70px' }}
           />
@@ -374,7 +501,7 @@ export default function CommunityFeed({ location }) {
               onClick={handlePost}
               disabled={posting || !text.trim()}
               className="px-4 py-2 rounded-xl text-xs font-medium text-white disabled:opacity-50 transition-all hover:scale-105"
-              style={{ background: '#5C1F1F' }}
+              style={{ background: postType === 'distress' ? '#7C1D1D' : '#2D6A4F' }}
             >
               {posting ? 'Posting...' : 'Share nearby'}
             </button>
@@ -395,7 +522,7 @@ export default function CommunityFeed({ location }) {
           <div className="text-3xl mb-2">🌿</div>
           <p className="text-sm font-medium text-[#2C1A0E]">No reports in your area</p>
           <p className="text-xs mt-1" style={{ color: '#C4956A' }}>
-            This area seems safe · Posts appear when women within 500m share
+            Area seems safe · Posts from women within 500m appear here
           </p>
         </div>
       ) : (
@@ -413,6 +540,7 @@ export default function CommunityFeed({ location }) {
               }}
             >
               <div className="p-4">
+                {/* User row */}
                 <div className="flex items-start gap-3 mb-3">
                   <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-medium text-white flex-shrink-0"
                     style={{ background: post.type === 'distress' ? '#7C1D1D' : '#2D6A4F' }}
@@ -421,7 +549,6 @@ export default function CommunityFeed({ location }) {
                       ? '👤'
                       : post.userName?.charAt(0).toUpperCase()}
                   </div>
-
                   <div className="flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-xs font-medium text-[#2C1A0E]">
@@ -446,6 +573,7 @@ export default function CommunityFeed({ location }) {
                   {post.text}
                 </p>
 
+                {/* Actions */}
                 <div className="flex gap-2 flex-wrap">
                   {post.helped ? (
                     <span className="flex items-center gap-1 px-3 py-2 rounded-xl text-xs"
