@@ -5,8 +5,9 @@ import api from '@/lib/axios'
 import useAuthStore from '@/store/authStore'
 import { getSocket } from '@/lib/socket'
 
-// ── Distance calculate karo (meters) ────────────────────────────────────────
-function getDistance(lat1, lng1, lat2, lng2) {
+const RADIUS = 500
+
+function getDistanceMeters(lat1, lng1, lat2, lng2) {
   if (!lat2 || !lng2) return 9999
   const R    = 6371000
   const dLat = ((lat2 - lat1) * Math.PI) / 180
@@ -19,7 +20,6 @@ function getDistance(lat1, lng1, lat2, lng2) {
   return 6371000 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
 }
 
-// ── Time ago ─────────────────────────────────────────────────────────────────
 function timeAgo(date) {
   const diff = Math.floor((Date.now() - new Date(date)) / 1000)
   if (diff < 60)   return 'just now'
@@ -27,10 +27,10 @@ function timeAgo(date) {
   return `${Math.floor(diff / 3600)}h ago`
 }
 
-// ── Chat Panel — per post alag ───────────────────────────────────────────────
+// ── Chat Panel ───────────────────────────────────────────────────────────────
 function ChatPanel({ post, currentUser, isAnon, onClose }) {
-  const socket   = getSocket()
-  const roomId   = `chat_${post._id}`
+  const socket = getSocket()
+  const roomId = `chat_${post._id}`
   const [messages, setMessages] = useState([])
   const [text,     setText]     = useState('')
   const endRef = useRef(null)
@@ -43,7 +43,6 @@ function ChatPanel({ post, currentUser, isAnon, onClose }) {
       setTimeout(() => endRef.current?.scrollIntoView({ behavior: 'smooth' }), 50)
     }
     socket.on('chat-message', handler)
-
     return () => socket.off('chat-message', handler)
   }, [roomId])
 
@@ -53,9 +52,7 @@ function ChatPanel({ post, currentUser, isAnon, onClose }) {
       room:     roomId,
       text:     text.trim(),
       userName: isAnon ? 'Anonymous' : (currentUser?.fullName || 'You'),
-      time:     new Date().toLocaleTimeString('en-IN', {
-        hour: '2-digit', minute: '2-digit',
-      }),
+      time:     new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }),
     }
     socket.emit('send-message', msg)
     setMessages((prev) => [...prev, { ...msg, self: true }])
@@ -65,7 +62,6 @@ function ChatPanel({ post, currentUser, isAnon, onClose }) {
 
   return (
     <div style={{ borderTop: '1px solid rgba(196,149,106,0.15)' }}>
-      {/* Header */}
       <div className="flex items-center justify-between px-4 py-2.5"
         style={{ background: 'rgba(124,29,29,0.04)' }}
       >
@@ -89,7 +85,6 @@ function ChatPanel({ post, currentUser, isAnon, onClose }) {
         </div>
       </div>
 
-      {/* Messages */}
       <div className="px-4 py-3 space-y-2 overflow-y-auto"
         style={{ maxHeight: '220px', minHeight: '80px' }}
       >
@@ -123,7 +118,6 @@ function ChatPanel({ post, currentUser, isAnon, onClose }) {
         <div ref={endRef} />
       </div>
 
-      {/* Input */}
       <div className="flex gap-2 px-4 pb-4 pt-2"
         style={{ borderTop: '0.5px solid rgba(196,149,106,0.1)' }}
       >
@@ -131,16 +125,14 @@ function ChatPanel({ post, currentUser, isAnon, onClose }) {
           value={text}
           onChange={(e) => setText(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && sendMsg()}
-          placeholder="Type a message... (Enter to send)"
+          placeholder="Type a message..."
           className="flex-1 px-3 py-2 rounded-xl text-xs text-[#2C1A0E] outline-none"
           style={{
             background: 'rgba(196,149,106,0.06)',
             border:     '1px solid rgba(196,149,106,0.2)',
           }}
         />
-        <button
-          onClick={sendMsg}
-          disabled={!text.trim()}
+        <button onClick={sendMsg} disabled={!text.trim()}
           className="px-4 py-2 rounded-xl text-xs font-medium text-white disabled:opacity-40"
           style={{ background: '#5C1F1F' }}
         >
@@ -153,8 +145,8 @@ function ChatPanel({ post, currentUser, isAnon, onClose }) {
 
 // ── Main Feed ────────────────────────────────────────────────────────────────
 export default function CommunityFeed({ location }) {
-  const { user }  = useAuthStore()
-  const socket    = getSocket()
+  const { user } = useAuthStore()
+  const socket   = getSocket()
 
   const [posts,        setPosts]        = useState([])
   const [loading,      setLoading]      = useState(true)
@@ -164,7 +156,7 @@ export default function CommunityFeed({ location }) {
   const [activeChatId, setActiveChatId] = useState(null)
   const [connected,    setConnected]    = useState(false)
 
-  const RADIUS = 500 // meters
+  const prevLocationRef = useRef(null)
 
   // ── Socket events ────────────────────────────────────────────────────────
   useEffect(() => {
@@ -174,19 +166,16 @@ export default function CommunityFeed({ location }) {
     const onNewPost = (post) => {
       if (!location) return
 
-      // ✅ FIX — coordinates array se lat/lng lo
       const pLat = post.location?.coordinates?.[1]
       const pLng = post.location?.coordinates?.[0]
 
-      if (!pLat || !pLng) {
-        setPosts((prev) => {
-          if (prev.find((p) => p._id === post._id)) return prev
-          return [post, ...prev]
-        })
-        return
-      }
+      // Distance check — sirf 500m ke andar
+      const dist = getDistanceMeters(
+        location.lat, location.lng,
+        pLat || location.lat,
+        pLng || location.lng
+      )
 
-      const dist = getDistance(location.lat, location.lng, pLat, pLng)
       if (dist <= RADIUS) {
         setPosts((prev) => {
           if (prev.find((p) => p._id === post._id)) return prev
@@ -216,25 +205,67 @@ export default function CommunityFeed({ location }) {
     }
   }, [location])
 
-  // ── Fetch posts ──────────────────────────────────────────────────────────
+  // ── Fetch posts — location change pe refetch + old posts remove ──────────
   const fetchPosts = useCallback(async () => {
     if (!location) return
+    setLoading(true)
+
+    // ✅ Old room leave karo
+    if (prevLocationRef.current) {
+      const oldRoom = `near_${prevLocationRef.current.lat.toFixed(2)}_${prevLocationRef.current.lng.toFixed(2)}`
+      socket.emit('leave-room', oldRoom)
+    }
+
+    // ✅ Naya room join karo
+    const newRoom = `near_${location.lat.toFixed(2)}_${location.lng.toFixed(2)}`
+    socket.emit('join-nearby', { lat: location.lat, lng: location.lng })
+    socket.emit('join-room', newRoom)
+
+    prevLocationRef.current = location
+
     try {
       const { data } = await api.get('/community/nearby', {
         params: { lat: location.lat, lng: location.lng, radius: RADIUS },
       })
-      setPosts(data.posts || [])
+
+      // ✅ Sirf current location ke posts dikhao
+      const nearbyPosts = (data.posts || []).filter((post) => {
+        const pLat = post.location?.coordinates?.[1]
+        const pLng = post.location?.coordinates?.[0]
+        if (!pLat || !pLng) return false
+        return getDistanceMeters(location.lat, location.lng, pLat, pLng) <= RADIUS
+      })
+
+      setPosts(nearbyPosts)
     } catch (err) {
       console.error('Feed fetch failed:', err)
+      setPosts([])
     } finally {
       setLoading(false)
     }
   }, [location])
 
+  // ✅ Location badli — turant posts clear karo aur refetch karo
   useEffect(() => {
-    if (location) fetchPosts()
-    else          setLoading(false)
-  }, [fetchPosts])
+    if (!location) {
+      setLoading(false)
+      return
+    }
+
+    const prev = prevLocationRef.current
+
+    // 100m se zyada move kiya toh posts clear karke refetch
+    if (prev) {
+      const dist = getDistanceMeters(prev.lat, prev.lng, location.lat, location.lng)
+      if (dist > 100) {
+        setPosts([])       // ✅ Purani posts turant clear
+        setActiveChatId(null)
+        fetchPosts()
+      }
+    } else {
+      fetchPosts()
+    }
+  }, [location])
 
   // ── Create post ──────────────────────────────────────────────────────────
   const handlePost = async () => {
@@ -269,7 +300,6 @@ export default function CommunityFeed({ location }) {
     }
   }
 
-  // ── UI ───────────────────────────────────────────────────────────────────
   return (
     <div>
       {/* Header */}
@@ -297,7 +327,7 @@ export default function CommunityFeed({ location }) {
         </div>
       </div>
 
-      {/* No location warning */}
+      {/* No location */}
       {!location && (
         <div className="rounded-xl p-4 mb-4 text-sm text-center"
           style={{ background: '#FAEEDA', color: '#633806', border: '1px solid rgba(239,159,39,0.3)' }}
@@ -373,17 +403,16 @@ export default function CommunityFeed({ location }) {
           {posts.map((post) => (
             <div key={post._id} className="rounded-2xl overflow-hidden"
               style={{
-                background:  'white',
-                border:      post.type === 'distress'
+                background: 'white',
+                border:     post.type === 'distress'
                   ? '1px solid rgba(232,180,184,0.4)'
                   : '1px solid rgba(196,149,106,0.2)',
-                borderLeft:  post.type === 'distress'
+                borderLeft: post.type === 'distress'
                   ? '4px solid #E8B4B8'
                   : '4px solid #C4956A',
               }}
             >
               <div className="p-4">
-                {/* User row */}
                 <div className="flex items-start gap-3 mb-3">
                   <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-medium text-white flex-shrink-0"
                     style={{ background: post.type === 'distress' ? '#7C1D1D' : '#2D6A4F' }}
@@ -413,12 +442,10 @@ export default function CommunityFeed({ location }) {
                   </div>
                 </div>
 
-                {/* Text */}
                 <p className="text-sm text-[#2C1A0E] leading-relaxed mb-4">
                   {post.text}
                 </p>
 
-                {/* Actions */}
                 <div className="flex gap-2 flex-wrap">
                   {post.helped ? (
                     <span className="flex items-center gap-1 px-3 py-2 rounded-xl text-xs"
@@ -444,9 +471,7 @@ export default function CommunityFeed({ location }) {
 
                   <button
                     onClick={() =>
-                      setActiveChatId((prev) =>
-                        prev === post._id ? null : post._id
-                      )
+                      setActiveChatId((prev) => prev === post._id ? null : post._id)
                     }
                     className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium transition-all hover:scale-105"
                     style={{
@@ -460,7 +485,6 @@ export default function CommunityFeed({ location }) {
                 </div>
               </div>
 
-              {/* Chat panel — per post alag */}
               {activeChatId === post._id && (
                 <ChatPanel
                   post={post}
