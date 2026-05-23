@@ -60,7 +60,6 @@ export default function AbhayaPage() {
           {/* LEFT MAIN AREA */}
           <div className="lg:col-span-2 space-y-6">
             <SafetyMap zoneStatus={zoneStatus} location={location} />
-            <CommunityFeed location={location} />
           </div>
 
           {/* RIGHT SIDEBAR */}
