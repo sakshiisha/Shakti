@@ -5,7 +5,6 @@ import useLocation          from '@/hooks/useLocation'
 import { getNearbyPlaces }  from '@/lib/placesUtils'
 import SafetyMap            from '@/components/abhaya/SafetyMap'
 import EmergencyButton      from '@/components/abhaya/EmergencyButton'
-import CommunityFeed        from '@/components/abhaya/CommunityFeed'
 import ZoneLegend           from '@/components/abhaya/ZoneLegend'
 
 export default function AbhayaPage() {
