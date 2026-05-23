@@ -38,12 +38,12 @@ export default function DashboardLayout({ children }) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
 
           {/* LOGO */}
-          <Link href="/" className="flex items-center gap-2">
+         
             <span className="text-2xl">ॐ</span>
             <span className="text-lg sm:text-xl text-[#1C1008]" style={{ fontFamily: 'Yatra One, cursive' }}>
               SHAKTI
             </span>
-          </Link>
+        
 
           {/* DESKTOP NAV (hidden on mobile) */}
           <div className="hidden md:flex items-center gap-2">
