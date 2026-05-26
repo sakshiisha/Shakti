@@ -8,25 +8,20 @@ const ZONE_COLORS = {
   unsafe:  { color: '#E24B4A', fillColor: '#E24B4A' },
 }
 
-const DEFAULT_LOCATION = { lat: 28.6139, lng: 77.2090 }
-
 export default function LeafletMap({ zoneStatus = 'safe', location = null }) {
   const mapRef      = useRef(null)
   const instanceRef = useRef(null)
   const circleRef   = useRef(null)
   const markerRef   = useRef(null)
 
-  const center = location || DEFAULT_LOCATION
+  const center = location || { lat: 28.6139, lng: 77.2090 }
 
   useEffect(() => {
-    if (typeof window === 'undefined') return
+    if (typeof window === 'undefined' || !mapRef.current) return
 
-    const initMap = async () => {
-      if (!mapRef.current) return  // ✅ FIX
-
+    const init = async () => {
       const L = (await import('leaflet')).default
       await import('leaflet/dist/leaflet.css')
-
       if (instanceRef.current) return
 
       const map = L.map(mapRef.current, {
@@ -34,82 +29,49 @@ export default function LeafletMap({ zoneStatus = 'safe', location = null }) {
         zoom:               15,
         zoomControl:        true,
         attributionControl: false,
+        scrollWheelZoom:    false, // scroll fix
       })
 
+      // z-index fix — navbar ke neeche rahe
+      map.getContainer().style.zIndex = '1'
+
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap',
-        maxZoom:     19,
+        maxZoom: 19,
       }).addTo(map)
 
       const icon = L.divIcon({
-        html: `<div style="
-          width:18px; height:18px; border-radius:50%;
-          background:#F4A7B9; border:3px solid white;
-          box-shadow:0 0 10px rgba(244,167,185,0.6);
-        "></div>`,
-        className: '',
-        iconSize:   [18, 18],
-        iconAnchor: [9, 9],
+        html: `<div style="width:16px;height:16px;border-radius:50%;background:#F4A7B9;border:3px solid white;box-shadow:0 0 10px rgba(244,167,185,0.7)"></div>`,
+        className: '', iconSize: [16, 16], iconAnchor: [8, 8],
       })
 
-      const marker = L.marker([center.lat, center.lng], { icon }).addTo(map)
-      markerRef.current = marker
+      markerRef.current = L.marker([center.lat, center.lng], { icon }).addTo(map)
 
-      const zoneColor = ZONE_COLORS[zoneStatus] || ZONE_COLORS.safe
-      const circle = L.circle([center.lat, center.lng], {
-        radius:      300,
-        color:       zoneColor.color,
-        fillColor:   zoneColor.fillColor,
-        fillOpacity: 0.15,
-        weight:      2,
-      }).addTo(map)
-      circleRef.current = circle
-
-      L.circle([center.lat, center.lng], {
-        radius:      600,
-        color:       '#C4956A',
-        fillColor:   'transparent',
-        fillOpacity: 0,
-        weight:      1.5,
-        dashArray:   '5 5',
+      const zc = ZONE_COLORS[zoneStatus] || ZONE_COLORS.safe
+      circleRef.current = L.circle([center.lat, center.lng], {
+        radius: 300, color: zc.color, fillColor: zc.fillColor,
+        fillOpacity: 0.12, weight: 2,
       }).addTo(map)
 
       instanceRef.current = map
     }
 
-    initMap()
-
+    init()
     return () => {
-      if (instanceRef.current) {
-        instanceRef.current.remove()
-        instanceRef.current = null
-      }
+      instanceRef.current?.remove()
+      instanceRef.current = null
     }
   }, [])
 
   useEffect(() => {
     if (!instanceRef.current || !location) return
-
     instanceRef.current.panTo([location.lat, location.lng])
-
-    if (markerRef.current) {
-      markerRef.current.setLatLng([location.lat, location.lng])
-    }
-
+    markerRef.current?.setLatLng([location.lat, location.lng])
     if (circleRef.current) {
       circleRef.current.setLatLng([location.lat, location.lng])
-      const zoneColor = ZONE_COLORS[zoneStatus] || ZONE_COLORS.safe
-      circleRef.current.setStyle({
-        color:     zoneColor.color,
-        fillColor: zoneColor.fillColor,
-      })
+      const zc = ZONE_COLORS[zoneStatus] || ZONE_COLORS.safe
+      circleRef.current.setStyle({ color: zc.color, fillColor: zc.fillColor })
     }
   }, [location, zoneStatus])
 
-  return (
-    <div
-      ref={mapRef}
-      style={{ width: '100%', height: '300px', borderRadius: '16px' }}
-    />
-  )
+  return <div ref={mapRef} style={{ width: '100%', height: '260px' }} />
 }

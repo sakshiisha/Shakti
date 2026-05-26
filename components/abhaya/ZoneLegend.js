@@ -1,92 +1,47 @@
 export default function ZoneLegend({ currentStatus = 'safe' }) {
   const zones = [
-    {
-      status: 'safe',
-      color:  '#2D6A4F',
-      bg:     'rgba(45,106,79,0.1)',
-      label:  'Safe Zone',
-      desc:   '10+ women nearby',
-    },
-    {
-      status: 'caution',
-      color:  '#C4956A',
-      bg:     'rgba(196,149,106,0.1)',
-      label:  'Caution Zone',
-      desc:   'Few women nearby or reports',
-    },
-    {
-      status: 'unsafe',
-      color:  '#5C1F1F',
-      bg:     'rgba(92,31,31,0.1)',
-      label:  'Unsafe Zone',
-      desc:   'Alone or distress reports nearby',
-    },
+    { status: 'safe',    emoji: '🟢', color: '#2D6A4F', bg: 'rgba(45,106,79,0.08)',  label: 'Safe Zone',    desc: '10+ women nearby' },
+    { status: 'caution', emoji: '🟡', color: '#C4956A', bg: 'rgba(196,149,106,0.1)', label: 'Caution Zone', desc: 'Few women nearby' },
+    { status: 'unsafe',  emoji: '🔴', color: '#7C1D1D', bg: 'rgba(124,29,29,0.08)',  label: 'Unsafe Zone',  desc: 'Alone or distress reports' },
   ]
 
-  const explain = {
-    safe:    'This zone is safe — women are active nearby and no distress reports.',
-    caution: 'Stay alert — few women are nearby or there are recent reports in this area.',
-    unsafe:  'Be careful — you appear to be alone or there are active distress reports near you.',
-  }
-
   return (
-    <div className="rounded-xl p-4 mt-3"
-      style={{ background: 'white', border: '1px solid rgba(196,149,106,0.2)' }}
-    >
-      <p className="text-xs font-medium uppercase tracking-wider mb-3"
-        style={{ color: '#C4956A' }}
-      >
-        How zone is calculated
+    <div style={{
+      borderRadius: '14px', padding: '14px 16px',
+      background: 'white', border: '1px solid rgba(196,149,106,0.2)',
+    }}>
+      <p style={{
+        fontSize: '11px', fontWeight: 500, color: '#C4956A',
+        margin: '0 0 10px', textTransform: 'uppercase', letterSpacing: '0.5px',
+      }}>
+        How Zone Safety Works
       </p>
-
-      {/* Current zone explanation */}
-      <div className="mb-3 px-3 py-2.5 rounded-lg text-xs leading-relaxed"
-        style={{
-          background: zones.find(z => z.status === currentStatus)?.bg || 'rgba(45,106,79,0.1)',
-          color: zones.find(z => z.status === currentStatus)?.color || '#2D6A4F',
-        }}
-      >
-        <strong>Currently:</strong> {explain[currentStatus]}
-      </div>
-
-      <div className="flex flex-col gap-2">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
         {zones.map((z) => (
-          <div key={z.status}
-            className="flex items-center gap-3 px-3 py-2 rounded-lg"
-            style={{
-              background: z.bg,
-              border: currentStatus === z.status
-                ? `1.5px solid ${z.color}`
-                : '1.5px solid transparent',
-            }}
-          >
-            <div className="w-3 h-3 rounded-full flex-shrink-0"
-              style={{ background: z.color }}
-            />
-            <span className="text-xs font-medium flex-1" style={{ color: z.color }}>
-              {z.label}
-            </span>
-            <span className="text-xs" style={{ color: z.color, opacity: 0.7 }}>
-              {z.desc}
-            </span>
+          <div key={z.status} style={{
+            display: 'flex', alignItems: 'center', gap: '10px',
+            padding: '8px 12px', borderRadius: '10px',
+            background: currentStatus === z.status ? z.bg : 'transparent',
+            border: currentStatus === z.status
+              ? `1.5px solid ${z.color}50`
+              : '1.5px solid transparent',
+          }}>
+            <span style={{ fontSize: '16px' }}>{z.emoji}</span>
+            <div style={{ flex: 1 }}>
+              <span style={{ fontSize: '13px', fontWeight: 500, color: z.color }}>
+                {z.label}
+              </span>
+              <span style={{ fontSize: '12px', color: z.color, opacity: 0.75, marginLeft: '6px' }}>
+                — {z.desc}
+              </span>
+            </div>
             {currentStatus === z.status && (
-              <span className="text-xs font-medium" style={{ color: z.color }}>
+              <span style={{ fontSize: '11px', color: z.color, fontWeight: 600 }}>
                 ← You
               </span>
             )}
           </div>
         ))}
-      </div>
-
-      <div className="mt-3 pt-3 flex items-center gap-2"
-        style={{ borderTop: '0.5px solid rgba(196,149,106,0.2)' }}
-      >
-        <div className="w-3 h-3 rounded-full flex-shrink-0"
-          style={{ background: '#F4A7B9', animation: 'ripple 2s ease-out infinite' }}
-        />
-        <span className="text-xs" style={{ color: '#C4956A' }}>
-          Zone updates every 10 seconds based on your GPS
-        </span>
       </div>
     </div>
   )

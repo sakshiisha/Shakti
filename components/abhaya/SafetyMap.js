@@ -1,47 +1,33 @@
 'use client'
 
 import dynamic from 'next/dynamic'
-import useLocation from '@/hooks/useLocation'
 
 const LeafletMap = dynamic(() => import('./LeafletMap'), { ssr: false })
 
-export default function SafetyMap() {
-  // ✅ FIX: alag GPS call nahi — global hook se lo
-  const { location, zoneData, loading } = useLocation()
-
-  const zoneStatus = zoneData?.status || 'safe'
-
-  if (loading) {
-    return (
-      <div className="rounded-2xl p-6 text-center text-sm" style={{ color: '#C4956A' }}>
-        Detecting your location...
-      </div>
-    )
+export default function SafetyMap({ zoneStatus = 'safe', location = null }) {
+  const badgeConfig = {
+    safe:    { bg: '#2D6A4F', text: 'Safe Zone ✓'    },
+    caution: { bg: '#C4956A', text: 'Caution Zone ⚠'  },
+    unsafe:  { bg: '#E24B4A', text: 'Unsafe Zone ✕'   },
   }
+  const badge = badgeConfig[zoneStatus] || badgeConfig.safe
 
   return (
-    <div className="mb-4 relative rounded-2xl overflow-hidden" style={{ height: '300px' }}>
+    <div style={{ borderRadius: '16px', overflow: 'hidden', position: 'relative', height: '260px', border: '1px solid rgba(196,149,106,0.25)' }}>
       <LeafletMap zoneStatus={zoneStatus} location={location} />
-
-      {/* Zone badge */}
-      <div
-        className="absolute top-3 right-3 z-50 px-3 py-1.5 rounded-full text-xs font-medium text-white"
-        style={{
-          background:
-            zoneStatus === 'safe'    ? '#2D6A4F' :
-            zoneStatus === 'unsafe'  ? '#E24B4A' : '#C4956A',
-        }}
-      >
-        {zoneStatus === 'safe'    && 'Safe Zone ✓'}
-        {zoneStatus === 'caution' && 'Caution Zone ⚠'}
-        {zoneStatus === 'unsafe'  && 'Unsafe Zone ✕'}
+      <div style={{
+        position: 'absolute', top: '12px', right: '12px', zIndex: 999,
+        padding: '5px 12px', borderRadius: '20px',
+        background: badge.bg, color: 'white', fontSize: '12px', fontWeight: 500,
+      }}>
+        {badge.text}
       </div>
-
       {location && (
-        <div
-          className="absolute bottom-3 left-3 z-50 text-xs px-2 py-1 rounded-lg"
-          style={{ background: 'rgba(255,248,240,0.95)', color: '#C4956A' }}
-        >
+        <div style={{
+          position: 'absolute', bottom: '12px', left: '12px', zIndex: 999,
+          padding: '4px 10px', borderRadius: '8px', fontSize: '11px',
+          background: 'rgba(255,248,240,0.92)', color: '#C4956A',
+        }}>
           📍 {location.lat.toFixed(4)}, {location.lng.toFixed(4)}
         </div>
       )}

@@ -81,11 +81,12 @@ export default function DashboardLayout({ children }) {
       </nav>
 
       {/* PAGE CONTENT — ✅ OVERLAP FIX */}
-      <main className="pt-[95px] md:pt-[105px] pb-24 md:pb-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          {children}
-        </div>
-      </main>
+      <main
+  className="pt-20 pb-20 md:pb-6"
+  style={{ overflowX: 'hidden', overflowY: 'auto' }}
+>
+  {children}
+</main>
 
       {/* MOBILE BOTTOM NAV */}
       <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-[#FDF6EC] border-t border-orange-200">

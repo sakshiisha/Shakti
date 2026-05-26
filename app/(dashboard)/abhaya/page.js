@@ -1,110 +1,143 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import useLocation          from '@/hooks/useLocation'
-import { getNearbyPlaces }  from '@/lib/placesUtils'
-import SafetyMap            from '@/components/abhaya/SafetyMap'
-import EmergencyButton      from '@/components/abhaya/EmergencyButton'
-import ZoneLegend           from '@/components/abhaya/ZoneLegend'
+import { useState, useEffect } from 'react'
+import useAuthStore   from '@/store/authStore'
+import api            from '@/lib/axios'
+import SafetyMap      from '@/components/abhaya/SafetyMap'
+import EmergencyButton from '@/components/abhaya/EmergencyButton'
+import ZoneLegend     from '@/components/abhaya/ZoneLegend'
+import HelpButton     from '@/components/abhaya/HelpButton'
+import NearbyResources from '@/components/abhaya/NearbyResources'
+import { getNearbyPlaces } from '@/lib/placesUtils'
 
 export default function AbhayaPage() {
-  const { location, zoneData } = useLocation()
-
-  const [resources, setResources] = useState([
-    { icon: '🏥', label: 'Hospital',       dist: '...' },
-    { icon: '🚔', label: 'Police Station', dist: '...' },
-    { icon: '💊', label: 'Pharmacy',       dist: '...' },
+  const { user }                          = useAuthStore()
+  const [location,   setLocation]         = useState(null)
+  const [zoneStatus, setZoneStatus]       = useState('safe')
+  const [zoneReason, setZoneReason]       = useState('')
+  const [resources,  setResources]        = useState([
+    { icon: '🏥', label: 'Hospital',     dist: '...' },
+    { icon: '🚔', label: 'Police — 112', dist: 'Call' },
+    { icon: '💊', label: 'Pharmacy',     dist: '...' },
   ])
-  const [resourcesLoading, setResourcesLoading] = useState(false)
-
-  const zoneStatus = zoneData?.status || 'safe'
 
   useEffect(() => {
-    if (!location) return
+    if (!navigator.geolocation) return
 
-    const fetchPlaces = async () => {
-      setResourcesLoading(true)
-      const places = await getNearbyPlaces(location.lat, location.lng)
-      setResources(places)
-      setResourcesLoading(false)
-    }
+    navigator.geolocation.getCurrentPosition(
+      async ({ coords: { latitude: lat, longitude: lng } }) => {
+        setLocation({ lat, lng })
 
-    fetchPlaces()
-  }, [location])
+        // Zone check
+        try {
+          const { data } = await api.post('/safety/check-zone', { lat, lng })
+          setZoneStatus(data.zone?.status || 'safe')
+          setZoneReason(data.zone?.reason  || '')
+        } catch {
+          setZoneStatus('safe')
+        }
+
+        // Nearby places
+        const places = await getNearbyPlaces(lat, lng)
+        if (places?.length > 0) setResources(places)
+      },
+      () => setZoneStatus('safe'),
+      { enableHighAccuracy: true, timeout: 10000 }
+    )
+  }, [])
 
   return (
-    <div className="min-h-screen" style={{ background: '#FFF8F0' }}>
-      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div style={{ background: '#FFF8F0', minHeight: '100vh' }}>
+      <div style={{ maxWidth: '860px', margin: '0 auto', padding: '24px 16px 80px' }}>
 
         {/* Header */}
-        <div className="mb-8">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-4"
-            style={{ background: 'rgba(212,160,23,0.1)', border: '1px solid rgba(212,160,23,0.3)' }}>
-            <span>🛡</span>
-            <span className="text-xs font-medium" style={{ color: '#C4956A' }}>
-              Abhaya — Safety Platform
+        <div style={{ marginBottom: '20px' }}>
+          <div style={{
+            display: 'inline-flex', alignItems: 'center', gap: '8px',
+            padding: '5px 14px', borderRadius: '20px', marginBottom: '12px',
+            background: 'rgba(212,160,23,0.1)', border: '1px solid rgba(212,160,23,0.3)',
+          }}>
+            <span style={{ fontSize: '13px' }}>🛡</span>
+            <span style={{ fontSize: '12px', color: '#C4956A', fontWeight: 500 }}>
+              Abhaya — Safety Dashboard
             </span>
           </div>
-
-          <h1
-            className="text-3xl sm:text-4xl"
-            style={{ fontFamily: 'Yatra One, cursive', color: '#2C1A0E' }}
-          >
-            Stay aware. Stay protected.
+          <h1 style={{
+            fontFamily: 'Yatra One, cursive',
+            fontSize:   'clamp(22px, 5vw, 32px)',
+            color:      '#2C1A0E',
+            margin:     '0 0 4px',
+          }}>
+            Stay Safe, Stay Protected
           </h1>
+          <p style={{ fontSize: '13px', color: '#C4956A', margin: 0 }}>
+            Hello {user?.fullName?.split(' ')[0] || 'Priya'} 🌸
+          </p>
         </div>
 
-        {/* 🌸 DASHBOARD GRID */}
-        <div className="grid lg:grid-cols-3 gap-6 items-start">
+        {/* Zone Banner */}
+        <ZoneBanner status={zoneStatus} reason={zoneReason} location={location} />
 
-          {/* LEFT MAIN AREA */}
-          <div className="lg:col-span-2 space-y-6">
-            <SafetyMap zoneStatus={zoneStatus} location={location} />
-          </div>
-
-          {/* RIGHT SIDEBAR */}
-          <div className="space-y-6">
-            <EmergencyButton location={location} />
-            <ZoneLegend currentStatus={zoneStatus} />
-
-            {/* Nearby resources */}
-            <div
-              className="rounded-2xl p-4"
-              style={{ background: 'white', border: '1px solid rgba(196,149,106,0.2)' }}
-            >
-              <p className="text-xs font-medium uppercase tracking-wider mb-3"
-                style={{ color: '#C4956A' }}>
-                Nearby Help
-              </p>
-
-              {resourcesLoading ? (
-                <p className="text-sm" style={{ color: '#C4956A' }}>
-                  Finding nearby places...
-                </p>
-              ) : (
-                <div className="space-y-3">
-                  {resources.map((r, i) => (
-                    <div key={i}
-                      className="flex items-center justify-between p-3 rounded-xl"
-                      style={{ background: 'rgba(196,149,106,0.08)' }}
-                    >
-                      <div className="flex items-center gap-3">
-                        <span className="text-xl">{r.icon}</span>
-                        <span className="text-sm text-[#2C1A0E]">{r.label}</span>
-                      </div>
-                      <span className="text-xs" style={{ color: '#C4956A' }}>
-                        {r.dist}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-          </div>
+        {/* Map */}
+        <div style={{ marginBottom: '20px' }}>
+          <SafetyMap zoneStatus={zoneStatus} location={location} />
         </div>
+
+        {/* Zone Legend */}
+        <div style={{ marginBottom: '20px' }}>
+          <ZoneLegend currentStatus={zoneStatus} />
+        </div>
+
+        {/* SOS */}
+        <div style={{ marginBottom: '20px' }}>
+          <EmergencyButton location={location} />
+        </div>
+
+        {/* Help Message */}
+        <div style={{ marginBottom: '20px' }}>
+          <HelpButton location={location} />
+        </div>
+
+        {/* Nearby Resources */}
+        <NearbyResources resources={resources} />
 
       </div>
+    </div>
+  )
+}
+
+// Zone Banner — inline small component
+function ZoneBanner({ status, reason, location }) {
+  const config = {
+    safe:    { color: '#2D6A4F', bg: 'rgba(45,106,79,0.08)',  label: 'Safe Zone',    emoji: '🟢', msg: 'You are in a safe area' },
+    caution: { color: '#C4956A', bg: 'rgba(196,149,106,0.1)', label: 'Caution Zone', emoji: '🟡', msg: 'Stay alert in this area' },
+    unsafe:  { color: '#7C1D1D', bg: 'rgba(124,29,29,0.08)',  label: 'Unsafe Zone',  emoji: '🔴', msg: 'Be careful — unsafe area' },
+  }
+  const z = config[status] || config.safe
+
+  return (
+    <div style={{
+      borderRadius: '14px', padding: '14px 18px', marginBottom: '20px',
+      background: z.bg, border: `1.5px solid ${z.color}40`,
+      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+      flexWrap: 'wrap', gap: '8px',
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <span style={{ fontSize: '28px' }}>{z.emoji}</span>
+        <div>
+          <p style={{ fontSize: '15px', fontWeight: 600, color: z.color, margin: '0 0 2px' }}>
+            {z.label}
+          </p>
+          <p style={{ fontSize: '12px', color: z.color, opacity: 0.8, margin: 0 }}>
+            {reason || z.msg}
+          </p>
+        </div>
+      </div>
+      {location && (
+        <span style={{ fontSize: '11px', color: z.color, opacity: 0.6 }}>
+          📍 {location.lat.toFixed(3)}, {location.lng.toFixed(3)}
+        </span>
+      )}
     </div>
   )
 }
