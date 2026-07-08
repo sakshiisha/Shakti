@@ -1,4 +1,4 @@
-import CounterStat from './CounterStat'
+
 
 export default function StatsBar() {
   return (
@@ -21,10 +21,7 @@ export default function StatsBar() {
 
       {/* Stats grid */}
       <div className="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8">
-        <CounterStat end={50000} label="Women Protected" suffix="+" />
-        <CounterStat end={127}   label="Cities Active"   suffix="+" />
-        <CounterStat end={15000} label="Alerts Sent"     suffix="+" />
-        <CounterStat end={500}   label="Doctors"         suffix="+" />
+       
       </div>
 
     </section>
